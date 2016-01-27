@@ -94,7 +94,7 @@ module GTFS
         @cache[cls].values.each(&block)
       else
         @cache[cls] = {}
-        cls.each(File.join(@tmp_dir, filename), options) do |model|
+        cls.each(file_path(filename), options) do |model|
           @cache[cls][model.id || model] = model
           block.call model
         end
@@ -103,22 +103,24 @@ module GTFS
 
     ##### Access methods #####
 
-    # Define feed.<entities>, feed.each_<entity>, feed.<entity>
+    # Define model access methods, e.g. feed.each_stop
     ENTITIES.each do |cls|
+      # feed.<entities>
       define_method cls.name.to_sym do
         ret = []
         self.cache(cls.filename) { |model| ret << model }
         ret
       end
 
+      # feed.<entity>
       define_method cls.singular_name.to_sym do |key|
         @cache[cls][key]
       end
 
+      # feed.each_<entity>
       define_method "each_#{cls.singular_name}".to_sym do |&block|
-        cls.each(File.join(@tmp_dir, cls.filename), options, &block)
+        cls.each(file_path(cls.filename), options, &block)
       end
-
     end
 
     def shape_line(shape_id)
@@ -261,13 +263,13 @@ module GTFS
       raise 'Cannot directly instantiate base GTFS::Source'
     end
 
-    def entries
-      Dir.entries(@tmp_dir)
+    def file_path(filename)
+      File.join(@tmp_dir, filename)
     end
 
     def parse_file(filename)
       raise_if_missing_source filename
-      open File.join(@tmp_dir, '/', filename), 'r:bom|utf-8' do |f|
+      open file_path(filename), 'r:bom|utf-8' do |f|
         files[filename] ||= yield f
       end
     end

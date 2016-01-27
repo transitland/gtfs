@@ -48,6 +48,10 @@ module GTFS
       load_archive(@source)
     end
 
+    def file_present?(filename)
+      File.exists?(file_path(filename))
+    end
+
     ##### Relationships #####
 
     def pclink(parent, child)

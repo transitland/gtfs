@@ -110,6 +110,15 @@ describe GTFS::Source do
     end
   end
 
+  describe '#service_period_range' do
+    let(:source) {GTFS::Source.build(valid_local_source)}
+    it 'calculates min and max service dates using both calendars' do
+      start_date, end_date = source.service_period_range
+      start_date.should eq Date.parse('2012-01-29')
+      end_date.should eq Date.parse('2012-06-16')
+    end
+  end
+
   describe '#agencies' do
     subject {source.agencies}
 

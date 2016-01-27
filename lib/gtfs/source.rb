@@ -133,6 +133,14 @@ module GTFS
       @service_periods[service_id]
     end
 
+    def service_period_range
+      self.load_service_periods if @service_periods.empty?
+      start_dates = @service_periods.values.map(&:start_date)
+      end_dates = @service_periods.values.map(&:end_date)
+      [start_dates.min, end_dates.max]
+
+    end
+
     ##### Load graph, shapes, calendars, etc. #####
 
     def load_graph

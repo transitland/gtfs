@@ -52,6 +52,24 @@ module GTFS
       File.exists?(file_path(filename))
     end
 
+    def required_files_present?
+      # Spec is ambiguous
+      required = [
+        GTFS::Agency,
+        GTFS::Stop,
+        GTFS::Route,
+        GTFS::Trip,
+        GTFS::StopTime
+      ].map { |cls| file_present?(cls.filename) }
+      # Either/both: calendar.txt, calendar_dates.txt
+      calendar = [
+        GTFS::Calendar,
+        GTFS::CalendarDate
+      ].map { |cls| file_present?(cls.filename) }
+      # All required files, and either calendar file
+      required.all? && calendar.any?
+    end
+
     ##### Relationships #####
 
     def pclink(parent, child)

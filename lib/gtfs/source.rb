@@ -171,19 +171,23 @@ module GTFS
     def load_service_periods
       @service_periods.clear
       # Load calendar
-      self.each_calendar do |e|
-        service_period = ServicePeriod.from_calendar(e)
-        @service_periods[service_period.id] = service_period
+      if file_present?(GTFS::Calendar.filename)
+        self.each_calendar do |e|
+          service_period = ServicePeriod.from_calendar(e)
+          @service_periods[service_period.id] = service_period
+        end
       end
       # Load calendar_date exceptions
-      self.each_calendar_date do |e|
-        service_period = @service_periods[e.service_id] || ServicePeriod.new(service_id: e.service_id)
-        if e.exception_type.to_i == 1
-          service_period.add_date(e.date)
-        else
-          service_period.except_date(e.date)
+      if file_present?(GTFS::CalendarDate.filename)
+        self.each_calendar_date do |e|
+          service_period = @service_periods[e.service_id] || ServicePeriod.new(service_id: e.service_id)
+          if e.exception_type.to_i == 1
+            service_period.add_date(e.date)
+          else
+            service_period.except_date(e.date)
+          end
+          @service_periods[service_period.id] = service_period
         end
-        @service_periods[service_period.id] = service_period
       end
       # Expand service range
       @service_periods.values.each(&:expand_service_range)

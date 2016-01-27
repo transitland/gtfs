@@ -159,6 +159,8 @@ module GTFS
     def load_shapes
       # Merge shapes
       @shape_lines.clear
+      # Return if missing shapes.txt
+      return unless file_present?(GTFS::Shape.filename)
       shapes_merge = Hash.new { |h,k| h[k] = [] }
       self.each_shape { |e| shapes_merge[e.shape_id] << e }
       shapes_merge.each do |k,v|

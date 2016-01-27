@@ -168,6 +168,7 @@ module GTFS
           .sort_by { |i| i.shape_pt_sequence.to_i }
           .map { |i| [i.shape_pt_lon.to_f, i.shape_pt_lat.to_f] }
       end
+      @shape_lines
     end
 
     def load_service_periods
@@ -193,6 +194,7 @@ module GTFS
       end
       # Expand service range
       @service_periods.values.each(&:expand_service_range)
+      @service_periods
     end
 
   ##### Incremental processing #####

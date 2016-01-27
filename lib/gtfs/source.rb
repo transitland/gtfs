@@ -254,7 +254,8 @@ module GTFS
     def extract_to_cache(source_path)
       Zip::File.open(source_path) do |zip|
         zip.entries.each do |entry|
-          zip.extract(entry.name, File.join(@tmp_dir, '/', entry.name))
+          next unless SOURCE_FILES.key?(entry.name)
+          zip.extract(entry.name, file_path(entry.name))
         end
       end
     end

@@ -20,8 +20,6 @@ module GTFS
       GTFS::Transfer,
       GTFS::FeedInfo
     ]
-    REQUIRED_SOURCE_FILES = ENTITIES.select(&:required_file?).map(&:filename)
-    OPTIONAL_SOURCE_FILES = ENTITIES.reject(&:required_file?).map(&:filename)
     SOURCE_FILES = Hash[ENTITIES.map { |e| [e.filename, e] }]
     DEFAULT_OPTIONS = {strict: true}
 
@@ -50,6 +48,28 @@ module GTFS
       load_archive(@source)
     end
 
+    def file_present?(filename)
+      File.exists?(file_path(filename))
+    end
+
+    def required_files_present?
+      # Spec is ambiguous
+      required = [
+        GTFS::Agency,
+        GTFS::Stop,
+        GTFS::Route,
+        GTFS::Trip,
+        GTFS::StopTime
+      ].map { |cls| file_present?(cls.filename) }
+      # Either/both: calendar.txt, calendar_dates.txt
+      calendar = [
+        GTFS::Calendar,
+        GTFS::CalendarDate
+      ].map { |cls| file_present?(cls.filename) }
+      # All required files, and either calendar file
+      required.all? && calendar.any?
+    end
+
     ##### Relationships #####
 
     def pclink(parent, child)
@@ -74,7 +94,7 @@ module GTFS
         @cache[cls].values.each(&block)
       else
         @cache[cls] = {}
-        cls.each(File.join(@tmp_dir, filename), options) do |model|
+        cls.each(file_path(filename), options) do |model|
           @cache[cls][model.id || model] = model
           block.call model
         end
@@ -83,22 +103,24 @@ module GTFS
 
     ##### Access methods #####
 
-    # Define feed.<entities>, feed.each_<entity>, feed.<entity>
+    # Define model access methods, e.g. feed.each_stop
     ENTITIES.each do |cls|
+      # feed.<entities>
       define_method cls.name.to_sym do
         ret = []
         self.cache(cls.filename) { |model| ret << model }
         ret
       end
 
+      # feed.<entity>
       define_method cls.singular_name.to_sym do |key|
         @cache[cls][key]
       end
 
+      # feed.each_<entity>
       define_method "each_#{cls.singular_name}".to_sym do |&block|
-        cls.each(File.join(@tmp_dir, cls.filename), options, &block)
+        cls.each(file_path(cls.filename), options, &block)
       end
-
     end
 
     def shape_line(shape_id)
@@ -109,6 +131,14 @@ module GTFS
     def service_period(service_id)
       self.load_service_periods if @service_periods.empty?
       @service_periods[service_id]
+    end
+
+    def service_period_range
+      self.load_service_periods if @service_periods.empty?
+      start_dates = @service_periods.values.map(&:start_date)
+      end_dates = @service_periods.values.map(&:end_date)
+      [start_dates.min, end_dates.max]
+
     end
 
     ##### Load graph, shapes, calendars, etc. #####
@@ -137,6 +167,8 @@ module GTFS
     def load_shapes
       # Merge shapes
       @shape_lines.clear
+      # Return if missing shapes.txt
+      return unless file_present?(GTFS::Shape.filename)
       shapes_merge = Hash.new { |h,k| h[k] = [] }
       self.each_shape { |e| shapes_merge[e.shape_id] << e }
       shapes_merge.each do |k,v|
@@ -144,27 +176,33 @@ module GTFS
           .sort_by { |i| i.shape_pt_sequence.to_i }
           .map { |i| [i.shape_pt_lon.to_f, i.shape_pt_lat.to_f] }
       end
+      @shape_lines
     end
 
     def load_service_periods
       @service_periods.clear
       # Load calendar
-      self.each_calendar do |e|
-        service_period = ServicePeriod.from_calendar(e)
-        @service_periods[service_period.id] = service_period
+      if file_present?(GTFS::Calendar.filename)
+        self.each_calendar do |e|
+          service_period = ServicePeriod.from_calendar(e)
+          @service_periods[service_period.id] = service_period
+        end
       end
       # Load calendar_date exceptions
-      self.each_calendar_date do |e|
-        service_period = @service_periods[e.service_id] || ServicePeriod.new(service_id: e.service_id)
-        if e.exception_type.to_i == 1
-          service_period.add_date(e.date)
-        else
-          service_period.except_date(e.date)
+      if file_present?(GTFS::CalendarDate.filename)
+        self.each_calendar_date do |e|
+          service_period = @service_periods[e.service_id] || ServicePeriod.new(service_id: e.service_id)
+          if e.exception_type.to_i == 1
+            service_period.add_date(e.date)
+          else
+            service_period.except_date(e.date)
+          end
+          @service_periods[service_period.id] = service_period
         end
-        @service_periods[service_period.id] = service_period
       end
       # Expand service range
       @service_periods.values.each(&:expand_service_range)
+      @service_periods
     end
 
   ##### Incremental processing #####
@@ -232,7 +270,8 @@ module GTFS
     def extract_to_cache(source_path)
       Zip::File.open(source_path) do |zip|
         zip.entries.each do |entry|
-          zip.extract(entry.name, File.join(@tmp_dir, '/', entry.name))
+          next unless SOURCE_FILES.key?(entry.name)
+          zip.extract(entry.name, file_path(entry.name))
         end
       end
     end
@@ -241,13 +280,13 @@ module GTFS
       raise 'Cannot directly instantiate base GTFS::Source'
     end
 
-    def entries
-      Dir.entries(@tmp_dir)
+    def file_path(filename)
+      File.join(@tmp_dir, filename)
     end
 
     def parse_file(filename)
       raise_if_missing_source filename
-      open File.join(@tmp_dir, '/', filename), 'r:bom|utf-8' do |f|
+      open file_path(filename), 'r:bom|utf-8' do |f|
         files[filename] ||= yield f
       end
     end

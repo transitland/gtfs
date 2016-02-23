@@ -3,7 +3,7 @@ module GTFS
     include GTFS::Model
 
     has_required_attrs :feed_publisher_name, :feed_publisher_url, :feed_lang
-    has_optional_attrs :feed_start_date, :feed_end_date, :feed_version
+    has_optional_attrs :feed_start_date, :feed_end_date, :feed_version, :feed_id
     attr_accessor *attrs
 
     collection_name :feed_infos

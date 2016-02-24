@@ -11,4 +11,11 @@ describe GTFS::Stop do
 
     include_examples 'models'
   end
+
+  describe 'GTFS::Stop.coordinates' do
+    it 'converts stop_lon,stop_lat into float coordinates' do
+      stop = GTFS::Stop.new({stop_lon: '4.56', stop_lat: '-12.3'})
+      stop.coordinates.should eq([4.56, -12.3])
+    end
+  end
 end

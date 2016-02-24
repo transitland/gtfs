@@ -16,5 +16,10 @@ module GTFS
     def id
       self.stop_id
     end
+
+    def coordinates
+      [stop_lon.to_f, stop_lat.to_f]
+    end
+
   end
 end

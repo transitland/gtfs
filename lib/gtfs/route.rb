@@ -152,13 +152,25 @@ module GTFS
      :'1701' => :'Cable Car',
      :'1702' => :'Horse-drawn Carriage'
     }
-    
+
     def gtfs_vehicle_type
       VEHICLE_TYPES[self.route_type.to_s.to_sym]
     end
 
     def id
       self.route_id
+    end
+
+    def stops
+      visited = Set.new
+      self.trips.each do |trip|
+        visited |= trip.stops
+      end
+      visited
+    end
+
+    def trips
+      self.feed.children(self)
     end
   end
 end

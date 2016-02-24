@@ -13,5 +13,9 @@ module GTFS
     def id
       self.trip_id
     end
+
+    def stops
+      self.feed.children(self)
+    end
   end
 end

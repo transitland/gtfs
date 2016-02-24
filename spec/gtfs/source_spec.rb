@@ -119,6 +119,13 @@ describe GTFS::Source do
     end
   end
 
+  describe 'each_entity' do
+    let(:source) {GTFS::Source.build(valid_local_source)}
+    it 'entities maintain reference to feed' do
+      source.agencies.first.feed.should be source
+    end
+  end
+
   describe '#agencies' do
     subject {source.agencies}
 

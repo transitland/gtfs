@@ -94,7 +94,7 @@ module GTFS
         @cache[cls].values.each(&block)
       else
         @cache[cls] = {}
-        cls.each(file_path(filename), options) do |model|
+        cls.each(file_path(filename), options, self) do |model|
           @cache[cls][model.id || model] = model
           block.call model
         end
@@ -119,7 +119,7 @@ module GTFS
 
       # feed.each_<entity>
       define_method "each_#{cls.singular_name}".to_sym do |&block|
-        cls.each(file_path(cls.filename), options, &block)
+        cls.each(file_path(cls.filename), options, self, &block)
       end
     end
 
@@ -138,7 +138,6 @@ module GTFS
       start_dates = @service_periods.values.map(&:start_date)
       end_dates = @service_periods.values.map(&:end_date)
       [start_dates.min, end_dates.max]
-
     end
 
     ##### Load graph, shapes, calendars, etc. #####

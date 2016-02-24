@@ -13,5 +13,27 @@ module GTFS
     def id
       self.agency_id
     end
+
+    def stops
+      visited = Set.new
+      self.routes.each do |route|
+        route.trips.each do |trip|
+          visited |= trip.stops
+        end
+      end
+      visited
+    end
+
+    def trips
+      visited = Set.new
+      self.routes.each do |route|
+        visited |= route.trips
+      end
+      visited
+    end
+
+    def routes
+      self.feed.children(self)
+    end
   end
 end

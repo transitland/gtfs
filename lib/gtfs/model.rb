@@ -8,6 +8,8 @@ module GTFS
       base.class_variable_set('@@optional_attrs', [])
       base.class_variable_set('@@required_attrs', [])
 
+      attr_accessor :feed
+
       def valid?
         !self.class.required_attrs.any?{|f| self.send(f.to_sym).nil?}
       end
@@ -75,22 +77,24 @@ module GTFS
         self.define_singleton_method(:filename) {filename}
       end
 
-      def each(filename, options={})
+      def each(filename, options={}, feed=nil)
         raise InvalidSourceException.new("File does not exist: #{filename}") unless File.exists?(filename)
         File.open(filename, encoding: 'bom|utf-8') do |f|
           Rcsv.parse(f, nostrict: true, columns: {}, header: :use, row_as_hash: true) do |row|
             model = self.new(row)
+            model.feed = feed
             yield model if options[:strict] == false || model.valid?
           end
         end
       end
 
       # Debugging only
-      def parse_models(data, options={})
+      def parse_models(data, options={}, feed=nil)
         return [] if data.nil? || data.empty?
         models = []
         Rcsv.parse(data, nostrict: true, columns: {}, header: :use, row_as_hash: true) do |row|
           model = self.new(row.to_hash)
+          model.feed = feed
           models << model if options[:strict] == false || model.valid?
         end
         models

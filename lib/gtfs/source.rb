@@ -147,38 +147,53 @@ module GTFS
 
     ##### Load graph, shapes, calendars, etc. #####
 
-    def prog(progress, total)
-      puts progress/total.to_f if (progress % 10 == 0 || progress == total)
-      return progress + 1
-    end
-
     def load_graph(&progress_block)
+      # Progress callback
+      progress_block ||= Proc.new { |count, total, entity| }
       # Clear
       @cache.clear
       @parents.clear
       @children.clear
       @trip_counter.clear
-      # Row count...
-      progress = 0
+      # Row count for progress bar...
+      count = 0
       total = 0
       [GTFS::Agency, GTFS::Route, GTFS::Trip, GTFS::Stop, GTFS::StopTime].each do |e|
         total += row_count(e.filename)
       end
-      # Cache core entities
+      # Load Agencies
       default_agency = nil
-      self.agencies.each { |e| default_agency = e; progress=prog(progress, total) }
-      self.routes.each { |e| self.pclink(self.agency(e.agency_id) || default_agency, e); progress=prog(progress, total) }
-      self.trips.each { |e| self.pclink(self.route(e.route_id), e); progress=prog(progress, total)}
-      # Link trips to stops
-      self.stops.each { progress=prog(progress, total) }
+      self.agencies.each do |e|
+        default_agency = e
+        count += 1
+        progress_block.call(count, total, e)
+      end
+      # Load Routes; link to agencies
+      self.routes.each do |e|
+        self.pclink(self.agency(e.agency_id) || default_agency, e)
+        count += 1
+        progress_block.call(count, total, e)
+      end
+      # Load Trips; link to routes
+      self.trips.each do |e|
+        self.pclink(self.route(e.route_id), e)
+        count += 1
+        progress_block.call(count, total, e)
+      end
+      # Load Stops
+      self.stops.each do |e|
+        count += 1
+        progress_block.call(count, total, e)
+      end
+      # Count StopTimes by Trip; link Stops to Trips
       self.each_stop_time do |e|
         trip = self.trip(e.trip_id)
         stop = self.stop(e.stop_id)
         self.pclink(trip, stop)
         @trip_counter[trip] += 1
-        progress=prog(progress, total)
+        count += 1
+        progress_block.call(count, total, e)
       end
-      progress=prog(progress, total)
     end
 
     def load_shapes

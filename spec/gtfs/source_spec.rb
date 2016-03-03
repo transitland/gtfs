@@ -49,6 +49,20 @@ describe GTFS::Source do
     end
   end
 
+  describe 'row_count' do
+    let(:source) {GTFS::Source.build(valid_local_source)}
+    it 'returns approximate row count' do
+      source.row_count('stop_times.txt').should eq 9
+    end
+  end
+
+  describe 'load_graph' do
+    let(:source) {GTFS::Source.build(valid_local_source)}
+    it 'test' do
+      source.load_graph
+    end
+  end
+
   describe '#file_present?' do
     let(:source) {GTFS::Source.build(valid_local_source)}
     it 'should return true if file is present' do

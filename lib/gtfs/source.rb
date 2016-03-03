@@ -52,6 +52,11 @@ module GTFS
       File.exists?(file_path(filename))
     end
 
+    def row_count(filename)
+      raise ArgumentError.new('File does not exist') unless file_present?(filename)
+      IO.popen(["wc","-l",file_path(filename)]).read.strip.split(" ").first.to_i - 1
+    end
+
     def required_files_present?
       # Spec is ambiguous
       required = [
@@ -142,24 +147,52 @@ module GTFS
 
     ##### Load graph, shapes, calendars, etc. #####
 
-    def load_graph
+    def load_graph(&progress_block)
+      # Progress callback
+      progress_block ||= Proc.new { |count, total, entity| }
       # Clear
       @cache.clear
       @parents.clear
       @children.clear
       @trip_counter.clear
-      # Cache core entities
+      # Row count for progress bar...
+      count = 0
+      total = 0
+      [GTFS::Agency, GTFS::Route, GTFS::Trip, GTFS::Stop, GTFS::StopTime].each do |e|
+        total += row_count(e.filename)
+      end
+      # Load Agencies
       default_agency = nil
-      self.agencies.each { |e| default_agency = e }
-      self.routes.each { |e| self.pclink(self.agency(e.agency_id) || default_agency, e) }
-      self.trips.each { |e| self.pclink(self.route(e.route_id), e)}
-      # Link trips to stops
-      self.stops.each {}
+      self.agencies.each do |e|
+        default_agency = e
+        count += 1
+        progress_block.call(count, total, e)
+      end
+      # Load Routes; link to agencies
+      self.routes.each do |e|
+        self.pclink(self.agency(e.agency_id) || default_agency, e)
+        count += 1
+        progress_block.call(count, total, e)
+      end
+      # Load Trips; link to routes
+      self.trips.each do |e|
+        self.pclink(self.route(e.route_id), e)
+        count += 1
+        progress_block.call(count, total, e)
+      end
+      # Load Stops
+      self.stops.each do |e|
+        count += 1
+        progress_block.call(count, total, e)
+      end
+      # Count StopTimes by Trip; link Stops to Trips
       self.each_stop_time do |e|
         trip = self.trip(e.trip_id)
         stop = self.stop(e.stop_id)
         self.pclink(trip, stop)
         @trip_counter[trip] += 1
+        count += 1
+        progress_block.call(count, total, e)
       end
     end
 

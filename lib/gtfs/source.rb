@@ -52,6 +52,11 @@ module GTFS
       File.exists?(file_path(filename))
     end
 
+    def row_count(filename)
+      raise ArgumentError.new('File does not exist') unless file_present?(filename)
+      IO.popen(["wc","-l",file_path(filename)]).read.strip.split(" ").first.to_i - 1
+    end
+
     def required_files_present?
       # Spec is ambiguous
       required = [
@@ -148,6 +153,12 @@ module GTFS
       @parents.clear
       @children.clear
       @trip_counter.clear
+      # Row count...
+      progress = 0
+      total = 0
+      [GTFS::Agency, GTFS::Route, GTFS::Trip, GTFS::Stop, GTFS::StopTime].each do |e|
+        total += row_count(e.filename)
+      end
       # Cache core entities
       default_agency = nil
       self.agencies.each { |e| default_agency = e }

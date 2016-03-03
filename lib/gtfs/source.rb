@@ -147,7 +147,12 @@ module GTFS
 
     ##### Load graph, shapes, calendars, etc. #####
 
-    def load_graph
+    def prog(progress, total)
+      puts progress/total.to_f if (progress % 10 == 0 || progress == total)
+      return progress + 1
+    end
+
+    def load_graph(&progress_block)
       # Clear
       @cache.clear
       @parents.clear
@@ -161,17 +166,19 @@ module GTFS
       end
       # Cache core entities
       default_agency = nil
-      self.agencies.each { |e| default_agency = e }
-      self.routes.each { |e| self.pclink(self.agency(e.agency_id) || default_agency, e) }
-      self.trips.each { |e| self.pclink(self.route(e.route_id), e)}
+      self.agencies.each { |e| default_agency = e; progress=prog(progress, total) }
+      self.routes.each { |e| self.pclink(self.agency(e.agency_id) || default_agency, e); progress=prog(progress, total) }
+      self.trips.each { |e| self.pclink(self.route(e.route_id), e); progress=prog(progress, total)}
       # Link trips to stops
-      self.stops.each {}
+      self.stops.each { progress=prog(progress, total) }
       self.each_stop_time do |e|
         trip = self.trip(e.trip_id)
         stop = self.stop(e.stop_id)
         self.pclink(trip, stop)
         @trip_counter[trip] += 1
+        progress=prog(progress, total)
       end
+      progress=prog(progress, total)
     end
 
     def load_shapes

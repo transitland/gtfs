@@ -54,7 +54,7 @@ module GTFS
 
     def row_count(filename)
       raise ArgumentError.new('File does not exist') unless file_present?(filename)
-      IO.popen(["wc","-l",file_path(filename)]).read.strip.split(" ").first.to_i - 1
+      IO.popen(["wc","-l",file_path(filename)]) { |io| io.read.strip.split(" ").first.to_i - 1 }
     end
 
     def required_files_present?

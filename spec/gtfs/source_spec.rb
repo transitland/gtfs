@@ -9,6 +9,14 @@ describe GTFS::Source do
     File.expand_path(File.dirname(__FILE__) + '/../fixtures/missing_files.zip')
   end
 
+  describe '.find_nested_gtfs' do
+    it 'finds nested sources' do
+      nested_source = File.join(File.dirname(__FILE__), '..', 'fixtures', 'example_nested.zip')
+      result = GTFS::Source.find_nested_gtfs(nested_source)
+      result.should =~ ["example_nested/example", "example_nested/nested/example.zip/."]
+    end
+  end
+
   describe '#build' do
     let(:opts) {{}}
     let(:data_source) {valid_local_source}

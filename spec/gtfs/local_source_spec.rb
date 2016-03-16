@@ -18,7 +18,7 @@ describe GTFS::LocalSource do
 
     context 'with a local source path to a valid source zip' do
       let(:source_path) {File.expand_path(File.dirname(__FILE__) + '/../fixtures/valid_gtfs.zip')}
-      
+
       it {should_not raise_error(GTFS::InvalidSourceException)}
     end
   end

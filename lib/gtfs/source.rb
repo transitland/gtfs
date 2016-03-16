@@ -38,18 +38,15 @@ module GTFS
       @service_periods = {}
       # Shape lines
       @shape_lines = {}
-      # Temporary directory
-      @tmp_dir = Dir.mktmpdir
-      ObjectSpace.define_finalizer(self, self.class.finalize(@tmp_dir))
       # Load options
       @options = DEFAULT_OPTIONS.merge(opts)
-      # Unzip to temporary directory
+      # Load
       @source = source
-      load_archive(@source)
+      @path = load_archive(@source)
     end
 
     def self.extract_nested(filename, entry)
-      
+
     end
 
     def self.find_nested_gtfs(filename)
@@ -116,7 +113,7 @@ module GTFS
     end
 
     def valid?
-      self.class.required_files_present?(Dir.entries(@tmp_dir))
+      self.class.required_files_present?(Dir.entries(@path))
     end
 
     def row_count(filename)
@@ -336,24 +333,13 @@ module GTFS
 
     private
 
-    def self.finalize(directory)
-      proc {FileUtils.rm_rf(directory)}
-    end
-
     def self.build(data_root, opts={})
-      if File.exists?(data_root)
+      if File.directory?(data_root)
+        src = DirSource.new(data_root, opts)
+      elsif File.exists?(data_root)
         src = LocalSource.new(data_root, opts)
       else
         src = URLSource.new(data_root, opts)
-      end
-    end
-
-    def extract_to_cache(source_path)
-      Zip::File.open(source_path) do |zip|
-        zip.entries.each do |entry|
-          next unless SOURCE_FILES.key?(entry.name)
-          zip.extract(entry.name, file_path(entry.name))
-        end
       end
     end
 
@@ -362,7 +348,7 @@ module GTFS
     end
 
     def file_path(filename)
-      File.join(@tmp_dir, filename)
+      File.join(@path, filename)
     end
 
     def parse_file(filename)

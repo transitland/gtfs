@@ -10,10 +10,14 @@ describe GTFS::Source do
   end
 
   describe '.find_nested_gtfs' do
+    it 'finds root sources' do
+      GTFS::Source.find_nested_gtfs(valid_local_source).should =~ ["/"]
+    end
+
     it 'finds nested sources' do
       nested_source = File.join(File.dirname(__FILE__), '..', 'fixtures', 'example_nested.zip')
       result = GTFS::Source.find_nested_gtfs(nested_source)
-      result.should =~ ["example_nested/example", "example_nested/nested/example.zip/."]
+      result.should =~ ["/example_nested/example", "/example_nested/nested/example.zip/"]
     end
   end
 
@@ -82,23 +86,27 @@ describe GTFS::Source do
   end
 
   describe '#required_files_present?' do
+
+  end
+
+  describe '#valid?' do
     it 'should be true when all required files present' do
       source = GTFS::Source.build(valid_local_source)
-      source.required_files_present?.should be true
+      source.valid?.should be true
     end
     it 'should be false when missing required files' do
       source = GTFS::Source.build(source_missing_required_files)
-      source.required_files_present?.should be false
+      source.valid?.should be false
     end
     it 'should accept either calendar.txt or calendar_dates.txt' do
       source = GTFS::Source.build(valid_local_source)
-      source.required_files_present?.should be true
+      source.valid?.should be true
       # ... still valid without calendar.txt
       File.unlink(source.send(:file_path, 'calendar.txt'))
-      source.required_files_present?.should be true
+      source.valid?.should be true
       # ... but invalid when missing calendar.txt & calendar_dates.txt
       File.unlink(source.send(:file_path, 'calendar_dates.txt'))
-      source.required_files_present?.should be false
+      source.valid?.should be false
     end
   end
 

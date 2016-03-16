@@ -48,20 +48,26 @@ module GTFS
       load_archive(@source)
     end
 
+    def self.extract_nested(filename, entry)
+      
+    end
+
     def self.find_nested_gtfs(filename)
       dirs = find_nested_archives(filename)
-        .select { |dir, files| required_files_present_two?(files) }
+        .select { |dir, files| required_files_present?(files) }
         .keys
     end
 
     def self.find_nested_archives(filename, basepath=nil, limit=1000, count=0)
+      basepath ||= "/"
       dirs = {}
       Zip::File.open(filename) do |zip|
         zip.entries.each do |entry|
           raise Exception.new("Too many files") if count > limit
           count += 1
           entry_dir, entry_name = File.split(entry.name)
-          entry_dir = File.join(basepath, entry_dir) if basepath
+          entry_dir = "" if entry_dir == "."
+          entry_dir = File.join(basepath, entry_dir)
           entry_ext = File.extname(entry_name)
           dirs[entry_dir] ||= Set.new
           if entry_ext == '.zip'
@@ -72,7 +78,7 @@ module GTFS
               tmpfile.close
               result = find_nested_archives(
                 tmpfile.path,
-                basepath=entry.name,
+                basepath=File.join(entry_dir, entry_name),
                 limit=limit,
                 count=count
               )
@@ -87,49 +93,35 @@ module GTFS
       dirs
     end
 
+    def self.required_files_present?(files)
+      # Spec is ambiguous
+      required = [
+        GTFS::Agency,
+        GTFS::Stop,
+        GTFS::Route,
+        GTFS::Trip,
+        GTFS::StopTime
+      ].map { |cls| files.include?(cls.filename) }
+      # Either/both: calendar.txt, calendar_dates.txt
+      calendar = [
+        GTFS::Calendar,
+        GTFS::CalendarDate
+      ].map { |cls| files.include?(cls.filename) }
+      # All required files, and either calendar file
+      required.all? && calendar.any?
+    end
+
     def file_present?(filename)
       File.exists?(file_path(filename))
+    end
+
+    def valid?
+      self.class.required_files_present?(Dir.entries(@tmp_dir))
     end
 
     def row_count(filename)
       raise ArgumentError.new('File does not exist') unless file_present?(filename)
       IO.popen(["wc","-l",file_path(filename)]) { |io| io.read.strip.split(" ").first.to_i - 1 }
-    end
-
-    def self.required_files_present_two?(files)
-      # Spec is ambiguous
-      required = [
-        GTFS::Agency,
-        GTFS::Stop,
-        GTFS::Route,
-        GTFS::Trip,
-        GTFS::StopTime
-      ].map { |cls| files.include?(cls.filename) }
-      # Either/both: calendar.txt, calendar_dates.txt
-      calendar = [
-        GTFS::Calendar,
-        GTFS::CalendarDate
-      ].map { |cls| files.include?(cls.filename) }
-      # All required files, and either calendar file
-      required.all? && calendar.any?
-    end
-
-    def required_files_present?
-      # Spec is ambiguous
-      required = [
-        GTFS::Agency,
-        GTFS::Stop,
-        GTFS::Route,
-        GTFS::Trip,
-        GTFS::StopTime
-      ].map { |cls| file_present?(cls.filename) }
-      # Either/both: calendar.txt, calendar_dates.txt
-      calendar = [
-        GTFS::Calendar,
-        GTFS::CalendarDate
-      ].map { |cls| file_present?(cls.filename) }
-      # All required files, and either calendar file
-      required.all? && calendar.any?
     end
 
     ##### Relationships #####

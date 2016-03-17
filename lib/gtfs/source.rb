@@ -43,6 +43,7 @@ module GTFS
       # Load
       @source = source
       @path = load_archive(@source)
+      raise GTFS::InvalidSourceException unless valid?
     end
 
     def self.extract_nested(filename, entry)
@@ -113,6 +114,7 @@ module GTFS
     end
 
     def valid?
+      return false unless File.exists?(@path)
       self.class.required_files_present?(Dir.entries(@path))
     end
 
@@ -335,7 +337,7 @@ module GTFS
 
     def self.build(data_root, opts={})
       if File.directory?(data_root)
-        src = DirSource.new(data_root, opts)
+        src = Source.new(data_root, opts)
       elsif File.exists?(data_root)
         src = LocalSource.new(data_root, opts)
       else
@@ -344,7 +346,7 @@ module GTFS
     end
 
     def load_archive(source)
-      raise 'Cannot directly instantiate base GTFS::Source'
+      source
     end
 
     def file_path(filename)

@@ -13,7 +13,7 @@ describe GTFS::LocalSource do
       GTFS::LocalSource.required_files_present?(Dir.entries(tmp_dir)).should be true
     end
 
-    it 'extracts nested files' do
+    it 'extracts nested directory' do
       path = "example_nested/example"
       tmp_dir = GTFS::LocalSource.extract_nested(source_nested_zip, path)
       GTFS::LocalSource.required_files_present?(Dir.entries(tmp_dir)).should be true

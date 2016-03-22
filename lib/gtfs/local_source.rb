@@ -65,12 +65,12 @@ module GTFS
 
     def self.find_gtfs_paths(filename)
       # Find internal paths to valid GTFS data inside (possibly nested) Zips.
-      dirs = find_paths(filename)
+      dirs = find_paths(filename: filename)
         .select { |dir, files| required_files_present?(files) }
         .keys
     end
 
-    def self.find_paths(filename, basepath=nil, limit=1000, count=0)
+    def self.find_paths(filename: nil, basepath: nil, limit: 1000, count: 0)
       # Recursively inspect a Zip archive, returning a directory index.
       # Nested zip files will have the form:
       #   nested.zip#inner_path
@@ -88,10 +88,10 @@ module GTFS
           if entry_ext == '.zip'
             extract_entry_zip(entry) do |tmppath|
               result = find_paths(
-                tmppath,
-                basepath=(basepath || "") + entry.name + '#',
-                limit=limit,
-                count=count
+                filename: tmppath,
+                basepath: (basepath || "") + entry.name + '#',
+                limit: limit,
+                count: count
               )
               dirs = dirs.merge(result)
             end

@@ -3,8 +3,6 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe GTFS::Source do
   let(:source_root) { File.join(File.expand_path(File.dirname(__FILE__)), '..') }
   let(:source_valid) { File.join(source_root, 'fixtures', 'valid_gtfs') }
-  let(:source_valid_zip) { File.join(source_root, 'fixtures', 'example.zip') }
-  let(:source_nested_zip) { File.join(source_root, 'fixtures', 'example_nested.zip') }
   let(:source_missing) { File.join(source_root, 'fixtures', 'not_here') }
   let(:source_missing_required_files) { File.join(source_root, 'fixtures', 'missing_files') }
 

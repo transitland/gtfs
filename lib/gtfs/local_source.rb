@@ -28,18 +28,8 @@ module GTFS
       proc {FileUtils.rm_rf(directory)}
     end
 
-    def self.extract_entry_zip(entry)
-      entry_dir, entry_name = File.split(entry.name)
-      Tempfile.open(entry_name) do |tmpfile|
-        tmpfile.binmode
-        tmpfile.write(entry.get_input_stream.read)
-        tmpfile.close
-        yield tmpfile.path
-        tmpfile.unlink
-      end
-    end
-
     def self.extract_nested(filename, path, tmp_dir=nil)
+      # Recursively extract GTFS CSV files from (possibly nested) Zips.
       path, _, fragment = path.partition('#')
       path = "." if path == ""
       tmp_dir ||= Dir.mktmpdir
@@ -69,6 +59,8 @@ module GTFS
         .select { |dir, files| required_files_present?(files) }
         .keys
     end
+
+    private
 
     def self.find_paths(filename: nil, basepath: nil, limit: 1000, count: 0)
       # Recursively inspect a Zip archive, returning a directory index.
@@ -101,6 +93,18 @@ module GTFS
         end
       end
       dirs
+    end
+
+    def self.extract_entry_zip(entry)
+      # Extract a Zip entry to a temporary file.
+      entry_dir, entry_name = File.split(entry.name)
+      Tempfile.open(entry_name) do |tmpfile|
+        tmpfile.binmode
+        tmpfile.write(entry.get_input_stream.read)
+        tmpfile.close
+        yield tmpfile.path
+        tmpfile.unlink
+      end
     end
   end
 end

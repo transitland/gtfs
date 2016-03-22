@@ -8,16 +8,6 @@ describe GTFS::Source do
   let(:source_missing) { File.join(source_root, 'fixtures', 'not_here') }
   let(:source_missing_required_files) { File.join(source_root, 'fixtures', 'missing_files') }
 
-  describe '.find_nested_gtfs' do
-    it 'finds root sources' do
-      GTFS::Source.find_nested_gtfs(source_valid_zip).should =~ ["/"]
-    end
-
-    it 'finds nested sources' do
-      GTFS::Source.find_nested_gtfs(source_nested_zip).should =~ ["/example_nested/example", "/example_nested/nested/example.zip/"]
-    end
-  end
-
   # describe '.build' do
   #   let(:opts) {{}}
   #   let(:data_source) { source_valid }

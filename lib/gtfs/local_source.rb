@@ -16,7 +16,7 @@ module GTFS
       proc {FileUtils.rm_rf(directory)}
     end
 
-    def self.extract_nested(filename, path, tmp_dir=nil)
+    def self.extract_nested(filename, path, tmp_dir: nil)
       # Recursively extract GTFS CSV files from (possibly nested) Zips.
       path, _, fragment = path.partition('#')
       path = "." if path == ""
@@ -33,7 +33,7 @@ module GTFS
           elsif entry.name == path && entry_ext == '.zip'
             # puts "\textract zip: #{entry.name}"
             extract_entry_zip(entry) do |tmppath|
-              extract_nested(tmppath, fragment, tmp_dir=tmp_dir)
+              extract_nested(tmppath, fragment, tmp_dir: tmp_dir)
             end
           end
         end
@@ -43,14 +43,14 @@ module GTFS
 
     def self.find_gtfs_paths(filename)
       # Find internal paths to valid GTFS data inside (possibly nested) Zips.
-      dirs = find_paths(filename: filename)
+      dirs = find_paths(filename)
         .select { |dir, files| required_files_present?(files) }
         .keys
     end
 
     private
 
-    def self.find_paths(filename: nil, basepath: nil, limit: 1000, count: 0)
+    def self.find_paths(filename, basepath: nil, limit: 1000, count: 0)
       # Recursively inspect a Zip archive, returning a directory index.
       # Nested zip files will have the form:
       #   nested.zip#inner_path
@@ -68,7 +68,7 @@ module GTFS
           if entry_ext == '.zip'
             extract_entry_zip(entry) do |tmppath|
               result = find_paths(
-                filename: tmppath,
+                tmppath,
                 basepath: (basepath || "") + entry.name + '#',
                 limit: limit,
                 count: count

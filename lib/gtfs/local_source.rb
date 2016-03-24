@@ -1,8 +1,5 @@
 module GTFS
   class LocalSource < Source
-
-    attr_accessor :tmp_dir
-
     def load_archive(source_path)
       source_path, _, fragment = source_path.partition('#')
       tmp_dir = self.class.extract_nested(source_path, fragment)

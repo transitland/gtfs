@@ -294,7 +294,7 @@ module GTFS
       if File.directory?(data_root)
         src = Source.new(data_root, opts)
       elsif File.exists?(data_root)
-        src = LocalSource.new(data_root, opts)
+        src = ZipSource.new(data_root, opts)
       else
         src = URLSource.new(data_root, opts)
       end

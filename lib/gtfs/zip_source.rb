@@ -1,5 +1,5 @@
 module GTFS
-  class LocalSource < Source
+  class ZipSource < Source
     def load_archive(source_path)
       source_path, _, fragment = source_path.partition('#')
       tmp_dir = self.class.extract_nested(source_path, fragment)
@@ -92,4 +92,9 @@ module GTFS
       end
     end
   end
+
+  # Backwards compatibility
+  class LocalSource < ZipSource
+  end
+
 end

@@ -20,7 +20,7 @@ describe GTFS::Source do
 
     context 'with a zip file path as a data root' do
       let(:data_source) { source_valid_zip }
-      it {should be_instance_of GTFS::LocalSource}
+      it {should be_instance_of GTFS::ZipSource}
       its(:options) {should == GTFS::Source::DEFAULT_OPTIONS}
     end
 

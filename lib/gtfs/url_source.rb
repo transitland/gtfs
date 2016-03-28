@@ -2,7 +2,7 @@ require 'net/http'
 require 'uri'
 
 module GTFS
-  class URLSource < LocalSource
+  class URLSource < ZipSource
     def load_archive(source_path)
       source_path, _, fragment = source_path.partition('#')
       tmp_dir = Dir.mktmpdir

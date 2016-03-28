@@ -16,7 +16,7 @@ require 'gtfs/frequency'
 require 'gtfs/transfer'
 
 require 'gtfs/source'
-require 'gtfs/local_source'
+require 'gtfs/zip_source'
 require 'gtfs/url_source'
 require 'gtfs/service_period'
 require 'gtfs/wide_time'

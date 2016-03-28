@@ -3,38 +3,39 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe GTFS::Source do
   let(:source_root) { File.join(File.expand_path(File.dirname(__FILE__)), '..') }
   let(:source_valid) { File.join(source_root, 'fixtures', 'valid_gtfs') }
+  let(:source_valid_zip) { File.join(source_root, 'fixtures', 'example.zip') }
   let(:source_missing) { File.join(source_root, 'fixtures', 'not_here') }
   let(:source_missing_required_files) { File.join(source_root, 'fixtures', 'missing_files') }
 
-  # describe '.build' do
-  #   let(:opts) {{}}
-  #   let(:data_source) { source_valid }
-  #   subject {GTFS::Source.build(data_source, opts)}
-  #
-  #   context 'with a url as a data root' do
-  #     use_vcr_cassette('valid_gtfs_uri')
-  #     let(:data_source) {'http://dl.dropbox.com/u/416235/work/valid_gtfs.zip'}
-  #     it {should be_instance_of GTFS::URLSource}
-  #     its(:options) {should == GTFS::Source::DEFAULT_OPTIONS}
-  #   end
-  #
-  #   context 'with a file path as a data root' do
-  #     let(:data_source) { source_valid }
-  #     it {should be_instance_of GTFS::Source}
-  #     its(:options) {should == GTFS::Source::DEFAULT_OPTIONS}
-  #   end
-  #
-  #   context 'with a file object as a data root' do
-  #     let(:data_source) {File.open(source_valid)}
-  #     it {should be_instance_of GTFS::Source}
-  #     its(:options) {should == GTFS::Source::DEFAULT_OPTIONS}
-  #   end
-  #
-  #   context 'with options to disable strict checks' do
-  #     let(:opts) {{strict: false}}
-  #     its(:options) {should == {strict: false}}
-  #   end
-  # end
+  describe '.build' do
+    let(:opts) {{}}
+    let(:data_source) { source_valid }
+    subject {GTFS::Source.build(data_source, opts)}
+
+    context 'with a directory path as a data root' do
+      let(:data_source) { source_valid }
+      it {should be_instance_of GTFS::Source}
+      its(:options) {should == GTFS::Source::DEFAULT_OPTIONS}
+    end
+
+    context 'with a zip file path as a data root' do
+      let(:data_source) { source_valid_zip }
+      it {should be_instance_of GTFS::LocalSource}
+      its(:options) {should == GTFS::Source::DEFAULT_OPTIONS}
+    end
+
+    context 'with a url as a data root' do
+      use_vcr_cassette('valid_gtfs_uri')
+      let(:data_source) {'http://dl.dropbox.com/u/416235/work/valid_gtfs.zip'}
+      it {should be_instance_of GTFS::URLSource}
+      its(:options) {should == GTFS::Source::DEFAULT_OPTIONS}
+    end
+
+    context 'with options to disable strict checks' do
+      let(:opts) {{strict: false}}
+      its(:options) {should == {strict: false}}
+    end
+  end
 
   describe '#new' do
     subject {lambda{GTFS::Source.new(source_path)}}

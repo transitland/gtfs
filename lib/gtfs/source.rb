@@ -38,26 +38,15 @@ module GTFS
       @service_periods = {}
       # Shape lines
       @shape_lines = {}
-      # Temporary directory
-      @tmp_dir = Dir.mktmpdir
-      ObjectSpace.define_finalizer(self, self.class.finalize(@tmp_dir))
       # Load options
       @options = DEFAULT_OPTIONS.merge(opts)
-      # Unzip to temporary directory
+      # Load
       @source = source
-      load_archive(@source)
+      @path = load_archive(@source)
+      raise GTFS::InvalidSourceException unless valid?
     end
 
-    def file_present?(filename)
-      File.exists?(file_path(filename))
-    end
-
-    def row_count(filename)
-      raise ArgumentError.new('File does not exist') unless file_present?(filename)
-      IO.popen(["wc","-l",file_path(filename)]) { |io| io.read.strip.split(" ").first.to_i - 1 }
-    end
-
-    def required_files_present?
+    def self.required_files_present?(files)
       # Spec is ambiguous
       required = [
         GTFS::Agency,
@@ -65,14 +54,28 @@ module GTFS
         GTFS::Route,
         GTFS::Trip,
         GTFS::StopTime
-      ].map { |cls| file_present?(cls.filename) }
+      ].map { |cls| files.include?(cls.filename) }
       # Either/both: calendar.txt, calendar_dates.txt
       calendar = [
         GTFS::Calendar,
         GTFS::CalendarDate
-      ].map { |cls| file_present?(cls.filename) }
+      ].map { |cls| files.include?(cls.filename) }
       # All required files, and either calendar file
       required.all? && calendar.any?
+    end
+
+    def file_present?(filename)
+      File.exists?(file_path(filename))
+    end
+
+    def valid?
+      return false unless File.exists?(@path)
+      self.class.required_files_present?(Dir.entries(@path))
+    end
+
+    def row_count(filename)
+      raise ArgumentError.new('File does not exist') unless file_present?(filename)
+      IO.popen(["wc","-l",file_path(filename)]) { |io| io.read.strip.split(" ").first.to_i - 1 }
     end
 
     ##### Relationships #####
@@ -287,33 +290,22 @@ module GTFS
 
     private
 
-    def self.finalize(directory)
-      proc {FileUtils.rm_rf(directory)}
-    end
-
     def self.build(data_root, opts={})
-      if File.exists?(data_root)
-        src = LocalSource.new(data_root, opts)
+      if File.directory?(data_root)
+        src = Source.new(data_root, opts)
+      elsif File.exists?(data_root)
+        src = ZipSource.new(data_root, opts)
       else
         src = URLSource.new(data_root, opts)
       end
     end
 
-    def extract_to_cache(source_path)
-      Zip::File.open(source_path) do |zip|
-        zip.entries.each do |entry|
-          next unless SOURCE_FILES.key?(entry.name)
-          zip.extract(entry.name, file_path(entry.name))
-        end
-      end
-    end
-
     def load_archive(source)
-      raise 'Cannot directly instantiate base GTFS::Source'
+      source
     end
 
     def file_path(filename)
-      File.join(@tmp_dir, filename)
+      File.join(@path, filename)
     end
 
     def parse_file(filename)

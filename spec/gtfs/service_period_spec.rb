@@ -10,7 +10,7 @@ describe GTFS::ServicePeriod do
     let(:opts) {{}}
 
     it 'has a service_period' do
-      source = GTFS::LocalSource.new(data_source, opts)
+      source = GTFS::ZipSource.new(data_source, opts)
       source.load_service_periods
       sp = source.service_period('1')
     end

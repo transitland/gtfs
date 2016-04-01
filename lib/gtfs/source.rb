@@ -288,7 +288,15 @@ module GTFS
       end
     end
 
-    private
+    def create_archive(path)
+      raise 'File exists' if File.exists?(path)
+      Zip::File.open(path, Zip::File::CREATE) do |zipfile|
+        self.class::ENTITIES.each do |cls|
+          next unless file_present?(cls.filename)
+          zipfile.add(cls.filename, file_path(cls.filename))
+        end
+      end
+    end
 
     def self.build(data_root, opts={})
       if File.directory?(data_root)
@@ -299,6 +307,8 @@ module GTFS
         src = URLSource.new(data_root, opts)
       end
     end
+
+    private
 
     def load_archive(source)
       source

@@ -105,6 +105,48 @@ describe GTFS::Source do
     end
   end
 
+  describe '#create_archive' do
+    let(:source) {GTFS::Source.build(source_valid)}
+    it 'should create an archive' do
+      # Create a temporary file to get tmp name
+      file = Tempfile.new('test.zip')
+      path = file.path
+      file.close
+      file.unlink
+      # Check created archive
+      entries = []
+      begin
+        source.create_archive(path)
+        Zip::File.open(path) do |zip|
+          zip.entries.each { |entry| entries << entry.name }
+        end
+      ensure
+        File.unlink(path) # remove archive again
+      end
+      entries.should =~ [
+        "agency.txt",
+        "stops.txt",
+        "routes.txt",
+        "trips.txt",
+        "stop_times.txt",
+        "calendar.txt",
+        "calendar_dates.txt",
+        "shapes.txt"
+      ]
+    end
+
+    it 'fails if file exists' do
+      file = Tempfile.new('test.zip')
+      path = file.path
+      file.close
+      begin
+        expect { source.create_archive(path) }.to raise_exception StandardError
+      ensure
+        file.unlink
+      end
+    end
+  end
+
   describe '#load_shapes' do
     let(:source) {GTFS::Source.build(source_valid)}
     it 'should load shapes when file present' do

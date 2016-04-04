@@ -293,7 +293,14 @@ module GTFS
       Zip::File.open(path, Zip::File::CREATE) do |zipfile|
         self.class::ENTITIES.each do |cls|
           next unless file_present?(cls.filename)
-          zipfile.add(cls.filename, file_path(cls.filename))
+          # zipfile.add(cls.filename, file_path(cls.filename))
+          entry = Zip::Entry.new(zipfile, cls.filename)
+          puts "entry: #{entry.time} - #{entry.name}"
+          entry.gather_fileinfo_from_srcpath(file_path(cls.filename))
+          entry.instance_variable_set('@time', Zip::DOSTime.parse('2016-01-01 01:02:03'))
+          entry.dirty = true
+          entry_set = zipfile.instance_variable_get('@entry_set')
+          entry_set << entry
         end
       end
     end

@@ -141,15 +141,9 @@ describe GTFS::Source do
       path2 = File.join(tmp_dir, '2.zip')
       f1 = GTFS::Source.build(source_valid)
       f1.create_archive(path1)
-      sleep(10)
+      sleep(5)
       f2 = GTFS::Source.build(source_valid)
       f2.create_archive(path2)
-      [path1, path2].each do |path|
-        puts path
-        Zip::File.open(path) do |zip|
-          zip.entries.each { |entry| puts "#{entry.time} -- #{entry.name}" }
-        end
-      end
       sha1 = Digest::SHA1.file(path1).hexdigest
       sha2 = Digest::SHA1.file(path2).hexdigest
       sha1.should eq sha2

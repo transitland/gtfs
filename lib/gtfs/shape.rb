@@ -9,5 +9,9 @@ module GTFS
     collection_name :shapes
     required_file false
     uses_filename 'shapes.txt'
+
+    def id
+      self.shape_id
+    end
   end
 end

@@ -288,10 +288,10 @@ module GTFS
       end
     end
 
-    def create_archive(path)
+    def create_archive(filename)
       # Create a new GTFS archive.
-      raise 'File exists' if File.exists?(path)
-      Zip::File.open(path, Zip::File::CREATE) do |zipfile|
+      raise 'File exists' if File.exists?(filename)
+      Zip::File.open(filename, Zip::File::CREATE) do |zipfile|
         self.class::ENTITIES.each do |cls|
           next unless file_present?(cls.filename)
           zipfile.add(cls.filename, file_path(cls.filename))
@@ -320,6 +320,7 @@ module GTFS
     private
 
     def load_archive(source)
+      # Return directory with GTFS CSV files
       source
     end
 

@@ -45,6 +45,11 @@ module GTFS
         .keys
     end
 
+    def self.exists?(source)
+      source, _, fragment = source.partition('#')
+      File.exists?(source)
+    end
+
     private
 
     def self.find_paths(filename, basepath: nil, limit: 1000, count: 0)

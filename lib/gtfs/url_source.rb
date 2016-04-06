@@ -18,5 +18,10 @@ module GTFS
     rescue Exception => e
       raise InvalidSourceException.new(e.message)
     end
+
+    def self.exists?(source)
+      source.start_with?('http')
+    end
+
   end
 end

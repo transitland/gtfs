@@ -288,9 +288,10 @@ module GTFS
       end
     end
 
-    def create_archive(path)
-      raise 'File exists' if File.exists?(path)
-      Zip::File.open(path, Zip::File::CREATE) do |zipfile|
+    def create_archive(filename)
+      # Create a new GTFS archive.
+      raise 'File exists' if File.exists?(filename)
+      Zip::File.open(filename, Zip::File::CREATE) do |zipfile|
         self.class::ENTITIES.each do |cls|
           next unless file_present?(cls.filename)
           zipfile.add(cls.filename, file_path(cls.filename))
@@ -298,19 +299,28 @@ module GTFS
       end
     end
 
-    def self.build(data_root, opts={})
-      if File.directory?(data_root)
-        src = Source.new(data_root, opts)
-      elsif File.exists?(data_root)
-        src = ZipSource.new(data_root, opts)
+    def self.build(source, opts={})
+      raise 'source required' unless source
+      source = source.to_s
+      if Source.exists?(source)
+        Source.new(source, opts)
+      elsif ZipSource.exists?(source)
+        ZipSource.new(source, opts)
+      elsif URLSource.exists?(source)
+        URLSource.new(source)
       else
-        src = URLSource.new(data_root, opts)
+        raise 'No handler for source'
       end
+    end
+
+    def self.exists?(source)
+      File.directory?(source)
     end
 
     private
 
     def load_archive(source)
+      # Return directory with GTFS CSV files
       source
     end
 

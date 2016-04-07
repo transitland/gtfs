@@ -1,0 +1,31 @@
+---
+- !ruby/struct:VCR::HTTPInteraction
+  request: !ruby/struct:VCR::Request
+    method: :get
+    uri: https://httpbin.org:443/get
+    body: 
+    headers:
+      accept-encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response: !ruby/struct:VCR::Response
+    status: !ruby/struct:VCR::ResponseStatus
+      code: 200
+      message: OK
+    headers:
+      server:
+      - nginx
+      date:
+      - Thu, 07 Apr 2016 07:43:12 GMT
+      content-type:
+      - application/json
+      content-length:
+      - '247'
+      access-control-allow-origin:
+      - "*"
+      access-control-allow-credentials:
+      - 'true'
+    body: "{\n  \"args\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
+      \"gzip;q=1.0,deflate;q=0.6,identity;q=0.3\", \n    \"Host\": \"httpbin.org\",
+      \n    \"User-Agent\": \"Ruby\"\n  }, \n  \"origin\": \"173.228.38.76\", \n  \"url\":
+      \"https://httpbin.org/get\"\n}\n"
+    http_version: '1.1'

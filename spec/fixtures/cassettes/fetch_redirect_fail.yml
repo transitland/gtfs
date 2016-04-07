@@ -1,0 +1,67 @@
+---
+- !ruby/struct:VCR::HTTPInteraction
+  request: !ruby/struct:VCR::Request
+    method: :get
+    uri: http://httpbin.org:80/absolute-redirect/6
+    body: 
+    headers:
+      accept-encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response: !ruby/struct:VCR::Response
+    status: !ruby/struct:VCR::ResponseStatus
+      code: 302
+      message: FOUND
+    headers:
+      server:
+      - nginx
+      date:
+      - Thu, 07 Apr 2016 07:43:12 GMT
+      content-type:
+      - text/html; charset=utf-8
+      content-length:
+      - '283'
+      location:
+      - http://httpbin.org/absolute-redirect/5
+      access-control-allow-origin:
+      - "*"
+      access-control-allow-credentials:
+      - 'true'
+    body: |-
+      <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+      <title>Redirecting...</title>
+      <h1>Redirecting...</h1>
+      <p>You should be redirected automatically to target URL: <a href="http://httpbin.org/absolute-redirect/5">http://httpbin.org/absolute-redirect/5</a>.  If not click the link.
+    http_version: '1.1'
+- !ruby/struct:VCR::HTTPInteraction
+  request: !ruby/struct:VCR::Request
+    method: :get
+    uri: http://httpbin.org:80/absolute-redirect/5
+    body: 
+    headers:
+      accept-encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response: !ruby/struct:VCR::Response
+    status: !ruby/struct:VCR::ResponseStatus
+      code: 302
+      message: FOUND
+    headers:
+      server:
+      - nginx
+      date:
+      - Thu, 07 Apr 2016 07:43:12 GMT
+      content-type:
+      - text/html; charset=utf-8
+      content-length:
+      - '283'
+      location:
+      - http://httpbin.org/absolute-redirect/4
+      access-control-allow-origin:
+      - "*"
+      access-control-allow-credentials:
+      - 'true'
+    body: |-
+      <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+      <title>Redirecting...</title>
+      <h1>Redirecting...</h1>
+      <p>You should be redirected automatically to target URL: <a href="http://httpbin.org/absolute-redirect/4">http://httpbin.org/absolute-redirect/4</a>.  If not click the link.
+    http_version: '1.1'

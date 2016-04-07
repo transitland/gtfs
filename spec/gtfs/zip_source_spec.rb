@@ -4,7 +4,25 @@ describe GTFS::ZipSource do
   let(:source_root) { File.join(File.expand_path(File.dirname(__FILE__)), '..') }
   let(:source_valid_zip) { File.join(source_root, 'fixtures', 'example.zip') }
   let(:source_nested_zip) { File.join(source_root, 'fixtures', 'example_nested.zip') }
+  let(:source_fragment) { source_nested_zip + '#' + 'example_nested/nested/example.zip'}
   let(:expected_files) { ['stops.txt', 'routes.txt', 'trips.txt', 'agency.txt', 'stop_times.txt'] }
+
+  describe '#load_archive' do
+    it 'extracts nested zip' do
+      fragment = 'example_nested/nested/example.zip'
+      feed = GTFS::ZipSource.new(source_fragment)
+      feed.valid?.should be true
+    end
+
+    it 'sets @archive and @path' do
+      fragment = 'example_nested/nested/example.zip'
+      source = source_nested_zip
+      feed = GTFS::ZipSource.new(source_fragment)
+      feed.source.should eq source_fragment
+      feed.archive.should eq source_nested_zip
+      feed.path.should be
+    end
+  end
 
   describe '.extract_nested' do
     it 'extracts flat path' do

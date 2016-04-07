@@ -23,7 +23,7 @@ module GTFS
     SOURCE_FILES = Hash[ENTITIES.map { |e| [e.filename, e] }]
     DEFAULT_OPTIONS = {strict: true}
 
-    attr_accessor :source, :archive, :options
+    attr_accessor :source, :archive, :path, :options
 
     def initialize(source, opts={})
       raise 'Source cannot be nil' if source.nil?
@@ -42,7 +42,7 @@ module GTFS
       @options = DEFAULT_OPTIONS.merge(opts)
       # Load
       @source = source
-      @path = load_archive(@source)
+      @path, @archive = load_archive(@source)
       raise GTFS::InvalidSourceException unless valid?
     end
 
@@ -152,6 +152,7 @@ module GTFS
 
     def load_graph(&progress_block)
       # Progress callback
+      progress_block ||= options[:progress_graph]
       progress_block ||= Proc.new { |count, total, entity| }
       # Clear
       @cache.clear

@@ -1,10 +1,11 @@
 module GTFS
   class ZipSource < Source
     def load_archive(source)
-      source, _, fragment = source.partition('#')
-      tmp_dir = self.class.extract_nested(source, fragment)
+      source_file, _, fragment = source.partition('#')
+      tmp_dir = self.class.extract_nested(source_file, fragment)
       ObjectSpace.define_finalizer(self, self.class.finalize(tmp_dir))
-      tmp_dir
+      # Return unzipped path and source zip file
+      return tmp_dir, source_file
     rescue Exception => e
       raise InvalidSourceException.new(e.message)
     end

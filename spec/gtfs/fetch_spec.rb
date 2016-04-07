@@ -76,6 +76,15 @@ describe Fetch do
       end
     end
 
+    it 'has a progress callback' do
+      VCR.use_cassette('fetch_binary') do
+        processed = 0
+        progress = lambda { |count, total| processed = count }
+        Fetch.download_to_tempfile(url_binary, progress: progress) { |filename| data = File.read(filename) }
+        processed.should eq 1024
+      end
+    end
+
     it 'allows files smaller than maximum size' do
       VCR.use_cassette('fetch_binary') do
         data = nil

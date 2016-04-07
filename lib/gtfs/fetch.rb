@@ -1,4 +1,5 @@
 require 'net/http'
+require 'uri'
 
 module Fetch
   def self.download_to_tempfile(url, maxsize: nil, progress: nil)

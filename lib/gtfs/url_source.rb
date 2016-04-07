@@ -1,6 +1,3 @@
-require 'net/http'
-require 'uri'
-
 module GTFS
   class URLSource < ZipSource
     def load_archive(source)

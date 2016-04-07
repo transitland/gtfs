@@ -18,4 +18,17 @@ describe GTFS::URLSource do
       end
     end
   end
+
+  context 'progress callback' do
+    let(:source_path) {'http://dl.dropbox.com/u/416235/work/valid_gtfs.zip'}
+    it 'reports download progress' do
+      processed = 0
+      progress = lambda { |count, total| processed = count }
+      VCR.use_cassette('valid_gtfs_uri') do
+        GTFS::URLSource.new(source_path, {progress_download: progress})
+      end
+      processed.should eq 4147
+    end
+  end
+
 end

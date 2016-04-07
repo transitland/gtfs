@@ -42,7 +42,7 @@ module GTFS
       @options = DEFAULT_OPTIONS.merge(opts)
       # Load
       @source = source
-      @path = load_archive(@source)
+      @path, @archive = load_archive(@source)
       raise GTFS::InvalidSourceException unless valid?
     end
 

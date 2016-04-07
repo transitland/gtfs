@@ -20,3 +20,5 @@ require 'gtfs/zip_source'
 require 'gtfs/url_source'
 require 'gtfs/service_period'
 require 'gtfs/wide_time'
+
+require 'rubyzip_time'

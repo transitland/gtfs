@@ -68,6 +68,14 @@ describe GTFS::Source do
     it 'test' do
       source.load_graph
     end
+
+    it 'calls progress callback' do
+      processed = 0
+      progress = lambda { |count, total, entity| processed = count }
+      source = GTFS::Source.build(source_valid, {progress_graph: progress})
+      source.load_graph
+      processed.should eq 115
+    end
   end
 
   describe '#file_present?' do
@@ -95,7 +103,6 @@ describe GTFS::Source do
       GTFS::Source.required_files_present?(all_files - ['calendar_dates.txt']).should be true
       GTFS::Source.required_files_present?(all_files - ['calendar.txt', 'calendar_dates.txt']).should be false
     end
-
   end
 
   describe '#valid?' do

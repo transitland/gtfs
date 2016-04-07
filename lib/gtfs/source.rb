@@ -152,6 +152,7 @@ module GTFS
 
     def load_graph(&progress_block)
       # Progress callback
+      progress_block ||= options[:progress_graph]
       progress_block ||= Proc.new { |count, total, entity| }
       # Clear
       @cache.clear

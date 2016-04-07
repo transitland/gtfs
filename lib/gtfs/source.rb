@@ -23,7 +23,7 @@ module GTFS
     SOURCE_FILES = Hash[ENTITIES.map { |e| [e.filename, e] }]
     DEFAULT_OPTIONS = {strict: true}
 
-    attr_accessor :source, :archive, :options
+    attr_accessor :source, :archive, :path, :options
 
     def initialize(source, opts={})
       raise 'Source cannot be nil' if source.nil?

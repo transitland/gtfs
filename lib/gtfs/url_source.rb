@@ -7,11 +7,7 @@ module GTFS
       source, _, fragment = source.partition('#')
       tmp_dir = Dir.mktmpdir
       source_file = File.join(tmp_dir, "/gtfs_temp_#{Time.now.strftime('%Y%jT%H%M%S%z')}.zip")
-      uri = URI.parse(source)
-      response = Net::HTTP.get_response(uri)
-      open(source_file, 'wb') do |file|
-        file.write response.body
-      end
+      Fetch.download(source, source_file)
       self.class.extract_nested(source_file, fragment, tmp_dir: tmp_dir)
       ObjectSpace.define_finalizer(self, self.class.finalize(tmp_dir))
       tmp_dir
@@ -22,6 +18,5 @@ module GTFS
     def self.exists?(source)
       source.start_with?('http')
     end
-
   end
 end

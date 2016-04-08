@@ -308,7 +308,7 @@ module GTFS
       elsif ZipSource.exists?(source)
         ZipSource.new(source, opts)
       elsif URLSource.exists?(source)
-        URLSource.new(source)
+        URLSource.new(source, opts)
       else
         raise 'No handler for source'
       end

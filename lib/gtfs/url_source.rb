@@ -9,7 +9,13 @@ module GTFS
       ObjectSpace.define_finalizer(self, self.class.finalize(tmp_dir))
       # Return unzipped path and source zip file
       return tmp_dir, source_file
-    rescue Exception => e
+    rescue SocketError => e
+      raise InvalidURLException.new(e.message)
+    rescue Net::HTTPServerException => e
+      raise InvalidResponseException.new(e.message, response_code=e.response.code)
+    rescue Zip::Error => e
+      raise InvalidZipException.new(e.message)
+    rescue StandardError => e
       raise InvalidSourceException.new(e.message)
     end
 

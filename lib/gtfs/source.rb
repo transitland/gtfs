@@ -261,7 +261,7 @@ module GTFS
       yield chunk
     end
 
-    def trip_stop_times(trips=nil)
+    def trip_stop_times(trips=nil, filter_empty=false)
       # Return all the stop time pairs for a set of trips.
       # Trip IDs
       trips ||= self.trips
@@ -275,6 +275,7 @@ module GTFS
       # Process each trip
       trips.each do |trip|
         stop_times = trip_ids_stop_times[trip.trip_id]
+        next if (filter_empty && stop_times.size < 2)
         stop_times = stop_times.sort_by { |st| st.stop_sequence.to_i }
         yield trip, stop_times
       end

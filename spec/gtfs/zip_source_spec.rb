@@ -25,21 +25,24 @@ describe GTFS::ZipSource do
   end
 
   describe '.extract_nested' do
+    before(:each) { @tmp_dir = Dir.mktmpdir }
+    after(:each) { FileUtils.rm_rf(@tmp_dir) }
+
     it 'extracts flat path' do
       path = ""
-      tmp_dir = GTFS::ZipSource.extract_nested(source_valid_zip, path)
+      tmp_dir = GTFS::ZipSource.extract_nested(source_valid_zip, path, @tmp_dir)
       GTFS::ZipSource.required_files_present?(Dir.entries(tmp_dir)).should be true
     end
 
     it 'extracts nested directory' do
       path = "example_nested/example"
-      tmp_dir = GTFS::ZipSource.extract_nested(source_nested_zip, path)
+      tmp_dir = GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmp_dir)
       GTFS::ZipSource.required_files_present?(Dir.entries(tmp_dir)).should be true
     end
 
     it 'extracts nested zip' do
       path = "example_nested/nested/example.zip"
-      tmp_dir = GTFS::ZipSource.extract_nested(source_nested_zip, path)
+      tmp_dir = GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmp_dir)
       GTFS::ZipSource.required_files_present?(Dir.entries(tmp_dir)).should be true
     end
   end

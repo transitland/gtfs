@@ -321,6 +321,18 @@ module GTFS
 
     private
 
+    def create_tmp_dir
+      if !@tmp_dir
+        @tmp_dir = Dir.mktmpdir("gtfs")
+        ObjectSpace.define_finalizer(self, self.class.finalize_tmp_dir(@tmp_dir))
+      end
+      @tmp_dir
+    end
+
+    def self.finalize_tmp_dir(directory)
+      proc {FileUtils.rm_rf(directory)}
+    end
+
     def load_archive(source)
       # Return directory with GTFS CSV files
       source

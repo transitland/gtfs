@@ -3,6 +3,7 @@ require 'fileutils'
 require 'zip'
 
 module GTFS
+
   class Source
 
     ENTITIES = [
@@ -76,6 +77,10 @@ module GTFS
     def row_count(filename)
       raise ArgumentError.new('File does not exist') unless file_present?(filename)
       IO.popen(["wc","-l",file_path(filename)]) { |io| io.read.strip.split(" ").first.to_i - 1 }
+    end
+
+    def inspect
+      "#<%s:0x%x @source=%s>" % [self.class, object_id, @source]
     end
 
     ##### Relationships #####

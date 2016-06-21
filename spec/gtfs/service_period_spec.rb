@@ -14,6 +14,39 @@ describe GTFS::ServicePeriod do
       source.load_service_periods
       sp = source.service_period('1')
     end
+  end
 
+  context 'service_on_date?' do
+    let(:sunday) { Date.parse('2016-05-29')}
+    let(:other_sunday) { Date.parse('2016-06-05') }
+    let(:monday) { Date.parse('2016-05-30') }
+    let(:tuesday) { Date.parse('2016-05-31') }
+    let(:service_period) {
+      GTFS::ServicePeriod.new(
+        start_date: Date.parse('2016-01-01'),
+        end_date: Date.parse('2017-01-01'),
+        added_dates: [sunday],
+        except_dates: [tuesday],
+        sunday: false,
+        monday: true,
+        tuesday: true
+      )
+    }
+
+    it 'true if day of week' do
+      service_period.service_on_date?(monday).should be true
+    end
+
+    it 'true if added_dates' do
+      service_period.service_on_date?(sunday).should be true
+    end
+
+    it 'false if not day of week' do
+      service_period.service_on_date?(other_sunday).should be false
+    end
+
+    it 'false if except_dates' do
+      service_period.service_on_date?(tuesday).should be false
+    end
   end
 end

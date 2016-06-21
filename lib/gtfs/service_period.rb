@@ -52,6 +52,10 @@ module GTFS
       self.service_id
     end
 
+    def service_on_date?(date)
+      date.between?(start_date, end_date) && (iso_service_weekdays[date.cwday-1] == true || added_dates.include?(date)) && (!except_dates.include?(date))
+    end
+
     def iso_service_weekdays
       # Export as a true/false boolean, not true/false/nil.
       ISO_DAYS_OF_WEEK.map { |i| self.send(i) == true }

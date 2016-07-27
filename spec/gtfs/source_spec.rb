@@ -143,9 +143,9 @@ describe GTFS::Source do
     end
 
     it 'creates stable sha1 across multiple extractions' do
-      tmp_dir = Dir.mktmpdir
-      path1 = File.join(tmp_dir, '1.zip')
-      path2 = File.join(tmp_dir, '2.zip')
+      tmpdir = Dir.mktmpdir
+      path1 = File.join(tmpdir, '1.zip')
+      path2 = File.join(tmpdir, '2.zip')
       f1 = GTFS::Source.build(source_valid_zip)
       f1.create_archive(path1)
       sleep(5)
@@ -161,7 +161,7 @@ describe GTFS::Source do
       sha1 = Digest::SHA1.file(path1).hexdigest
       sha2 = Digest::SHA1.file(path2).hexdigest
       sha1.should eq sha2
-      FileUtils.rm_rf(tmp_dir)
+      FileUtils.rm_rf(tmpdir)
     end
 
     it 'fails if file exists' do

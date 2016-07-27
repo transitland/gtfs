@@ -326,15 +326,15 @@ module GTFS
 
     private
 
-    def create_tmp_dir
-      if !@tmp_dir
-        @tmp_dir = Dir.mktmpdir("gtfs", options[:tmpdir_basepath])
-        ObjectSpace.define_finalizer(self, self.class.finalize_tmp_dir(@tmp_dir))
+    def create_tmpdir
+      if !@tmpdir
+        @tmpdir = Dir.mktmpdir("gtfs", options[:tmpdir_basepath])
+        ObjectSpace.define_finalizer(self, self.class.finalize_tmpdir(@tmpdir))
       end
-      @tmp_dir
+      @tmpdir
     end
 
-    def self.finalize_tmp_dir(directory)
+    def self.finalize_tmpdir(directory)
       proc {FileUtils.rm_rf(directory)}
     end
 

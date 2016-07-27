@@ -112,6 +112,33 @@ describe GTFS::Source do
     end
   end
 
+  describe '#create_tmpdir' do
+    it 'creates a temporary directory' do
+      source = GTFS::Source.build(source_valid)
+      tmpdir = source.send(:create_tmpdir)
+      File.directory?(tmpdir).should be true
+    end
+
+    it 'attaches finalizer to rm tmpdir' do
+      source = GTFS::Source.build(source_valid)
+      tmpdir = source.send(:create_tmpdir)
+      File.exists?(tmpdir).should be true
+      # Delete source
+      source = nil
+      ObjectSpace.garbage_collect
+      File.exists?(tmpdir).should be false
+    end
+
+    it 'accepts tmpdir_basepath option' do
+      tmpdir_basepath = Dir.mktmpdir
+      source = GTFS::Source.build(source_valid, {tmpdir_basepath: tmpdir_basepath})
+      tmpdir = source.send(:create_tmpdir)
+      # Check tmpdir is subdir of tmpdir_basepath
+      File.directory?(tmpdir).should be true
+      Dir.entries(tmpdir_basepath).should include(File.basename(tmpdir))
+    end
+  end
+
   describe '#create_archive' do
     let(:source) {GTFS::Source.build(source_valid)}
     it 'should create an archive' do

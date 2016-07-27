@@ -328,7 +328,7 @@ module GTFS
 
     def create_tmp_dir
       if !@tmp_dir
-        @tmp_dir = Dir.mktmpdir("gtfs")
+        @tmp_dir = Dir.mktmpdir("gtfs", options[:tmpdir_basepath])
         ObjectSpace.define_finalizer(self, self.class.finalize_tmp_dir(@tmp_dir))
       end
       @tmp_dir

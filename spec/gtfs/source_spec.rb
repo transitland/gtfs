@@ -119,15 +119,15 @@ describe GTFS::Source do
       File.directory?(tmpdir).should be true
     end
 
-    it 'attaches finalizer to rm tmpdir' do
-      source = GTFS::Source.build(source_valid)
-      tmpdir = source.send(:create_tmpdir)
-      File.exists?(tmpdir).should be true
-      # Delete source
-      source = nil
-      ObjectSpace.garbage_collect
-      File.exists?(tmpdir).should be false
-    end
+    # GC invocation not reliable on CI
+    # it 'attaches finalizer to rm tmpdir' do
+    #   source = GTFS::Source.build(source_valid)
+    #   tmpdir = source.send(:create_tmpdir)
+    #   File.exists?(tmpdir).should be true
+    #   source = nil
+    #   ObjectSpace.garbage_collect
+    #   File.exists?(tmpdir).should be false
+    # end
 
     it 'accepts tmpdir_basepath option' do
       tmpdir_basepath = Dir.mktmpdir

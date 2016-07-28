@@ -112,6 +112,33 @@ describe GTFS::Source do
     end
   end
 
+  describe '#create_tmpdir' do
+    it 'creates a temporary directory' do
+      source = GTFS::Source.build(source_valid)
+      tmpdir = source.send(:create_tmpdir)
+      File.directory?(tmpdir).should be true
+    end
+
+    # GC invocation not reliable on CI
+    # it 'attaches finalizer to rm tmpdir' do
+    #   source = GTFS::Source.build(source_valid)
+    #   tmpdir = source.send(:create_tmpdir)
+    #   File.exists?(tmpdir).should be true
+    #   source = nil
+    #   ObjectSpace.garbage_collect
+    #   File.exists?(tmpdir).should be false
+    # end
+
+    it 'accepts tmpdir_basepath option' do
+      tmpdir_basepath = Dir.mktmpdir
+      source = GTFS::Source.build(source_valid, {tmpdir_basepath: tmpdir_basepath})
+      tmpdir = source.send(:create_tmpdir)
+      # Check tmpdir is subdir of tmpdir_basepath
+      File.directory?(tmpdir).should be true
+      Dir.entries(tmpdir_basepath).should include(File.basename(tmpdir))
+    end
+  end
+
   describe '#create_archive' do
     let(:source) {GTFS::Source.build(source_valid)}
     it 'should create an archive' do
@@ -143,9 +170,9 @@ describe GTFS::Source do
     end
 
     it 'creates stable sha1 across multiple extractions' do
-      tmp_dir = Dir.mktmpdir
-      path1 = File.join(tmp_dir, '1.zip')
-      path2 = File.join(tmp_dir, '2.zip')
+      tmpdir = Dir.mktmpdir
+      path1 = File.join(tmpdir, '1.zip')
+      path2 = File.join(tmpdir, '2.zip')
       f1 = GTFS::Source.build(source_valid_zip)
       f1.create_archive(path1)
       sleep(5)
@@ -161,7 +188,7 @@ describe GTFS::Source do
       sha1 = Digest::SHA1.file(path1).hexdigest
       sha2 = Digest::SHA1.file(path2).hexdigest
       sha1.should eq sha2
-      FileUtils.rm_rf(tmp_dir)
+      FileUtils.rm_rf(tmpdir)
     end
 
     it 'fails if file exists' do

@@ -2,21 +2,21 @@ module GTFS
   class ZipSource < Source
     def load_archive(source)
       source_file, _, fragment = source.partition('#')
-      tmp_dir = create_tmp_dir
-      self.class.extract_nested(source_file, fragment, tmp_dir)
+      tmpdir = create_tmpdir
+      self.class.extract_nested(source_file, fragment, tmpdir)
       # Return unzipped path and source zip file
-      return tmp_dir, source_file
+      return tmpdir, source_file
     rescue Zip::Error => e
       raise InvalidZipException.new(e.message)
     rescue StandardError => e
       raise InvalidSourceException.new(e.message)
     end
 
-    def self.extract_nested(filename, source, tmp_dir)
+    def self.extract_nested(filename, source, tmpdir)
       # Recursively extract GTFS CSV files from (possibly nested) Zips.
       source, _, fragment = source.partition('#')
       source = "." if source == ""
-      # puts "path: #{path} fragment: #{fragment} tmp_dir: #{tmp_dir}"
+      # puts "path: #{path} fragment: #{fragment} tmpdir: #{tmpdir}"
       Zip::File.open(filename) do |zip|
         zip.entries.each do |entry|
           entry_dir, entry_name = File.split(entry.name)
@@ -24,16 +24,16 @@ module GTFS
           # puts "entry_dir: #{entry_dir} entry_name: #{entry_name} entry_ext: #{entry_ext}"
           if entry_dir == source && SOURCE_FILES.key?(entry_name)
             # puts "\textract file: #{entry.name}"
-            entry.extract(File.join(tmp_dir, entry_name))
+            entry.extract(File.join(tmpdir, entry_name))
           elsif entry.name == source && entry_ext == '.zip'
             # puts "\textract zip: #{entry.name}"
             extract_entry_zip(entry) do |tmppath|
-              extract_nested(tmppath, fragment, tmp_dir)
+              extract_nested(tmppath, fragment, tmpdir)
             end
           end
         end
       end
-      tmp_dir
+      tmpdir
     end
 
     def self.find_gtfs_paths(filename)

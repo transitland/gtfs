@@ -11,8 +11,6 @@ module GTFS
     uses_filename 'routes.txt'
 
     VEHICLE_TYPES = {
-      nil => nil,
-     :'' => nil,
       # Basic GTFS
      :'0' => :'Tram',
      :'1' => :'Metro',
@@ -152,6 +150,14 @@ module GTFS
      :'1701' => :'Cable Car',
      :'1702' => :'Horse-drawn Carriage'
     }
+
+    def self.match_vehicle_type(key)
+      key = key.to_s.downcase.to_sym
+      vehicle_types_invert = Hash[GTFS::Route::VEHICLE_TYPES.map { |k,v| [v.downcase, k] }]
+      code = vehicle_types_invert[key] || key
+      fail KeyError.new("Unknown vehicle_type: #{key}") unless VEHICLE_TYPES[code]
+      code
+    end
 
     def gtfs_vehicle_type
       VEHICLE_TYPES[self.route_type.to_s.to_sym]

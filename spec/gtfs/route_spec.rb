@@ -12,6 +12,24 @@ describe GTFS::Route do
     include_examples 'models'
   end
 
+  context 'GTFS::Route.vehicle_type_to_code' do
+    it 'returns from string' do
+      GTFS::Route::match_vehicle_type('metro').should eq(:'1')
+    end
+    it 'case insensitive' do
+      GTFS::Route::match_vehicle_type('METRO').should eq(:'1')
+    end
+    it 'returns from symbol' do
+      GTFS::Route::match_vehicle_type(:Metro).should eq(:'1')
+    end
+    it 'returns from integer' do
+      GTFS::Route::match_vehicle_type(1).should eq(:'1')
+    end
+    it 'fails on missing key' do
+      GTFS::Route::match_vehicle_type(1).should raise_error
+    end
+  end
+
   context 'GTFS::Route.gtfs_vehicle_type' do
     it 'returns vehicle_type from string' do
       route = GTFS::Route.new({route_type: '0'})

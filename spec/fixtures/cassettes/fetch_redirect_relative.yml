@@ -1,0 +1,60 @@
+---
+- !ruby/struct:VCR::HTTPInteraction
+  request: !ruby/struct:VCR::Request
+    method: :get
+    uri: http://httpbin.org:80/redirect-to?url=%2Fget
+    body: 
+    headers:
+      accept-encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response: !ruby/struct:VCR::Response
+    status: !ruby/struct:VCR::ResponseStatus
+      code: 302
+      message: FOUND
+    headers:
+      server:
+      - nginx
+      date:
+      - Wed, 07 Sep 2016 23:31:52 GMT
+      content-type:
+      - text/html; charset=utf-8
+      content-length:
+      - '0'
+      location:
+      - "/get"
+      access-control-allow-origin:
+      - "*"
+      access-control-allow-credentials:
+      - 'true'
+    body: 
+    http_version: '1.1'
+- !ruby/struct:VCR::HTTPInteraction
+  request: !ruby/struct:VCR::Request
+    method: :get
+    uri: http://httpbin.org:80/get
+    body: 
+    headers:
+      accept-encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response: !ruby/struct:VCR::Response
+    status: !ruby/struct:VCR::ResponseStatus
+      code: 200
+      message: OK
+    headers:
+      server:
+      - nginx
+      date:
+      - Wed, 07 Sep 2016 23:31:52 GMT
+      content-type:
+      - application/json
+      content-length:
+      - '245'
+      access-control-allow-origin:
+      - "*"
+      access-control-allow-credentials:
+      - 'true'
+    body: "{\n  \"args\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
+      \"gzip;q=1.0,deflate;q=0.6,identity;q=0.3\", \n    \"Host\": \"httpbin.org\",
+      \n    \"User-Agent\": \"Ruby\"\n  }, \n  \"origin\": \"4.16.196.158\", \n  \"url\":
+      \"http://httpbin.org/get\"\n}\n"
+    http_version: '1.1'

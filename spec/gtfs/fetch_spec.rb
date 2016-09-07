@@ -3,6 +3,7 @@ require 'json'
 describe GTFS::Fetch do
   let (:url) { 'http://httpbin.org/get' }
   let (:url_redirect) { 'http://httpbin.org/redirect-to?url=http%3A%2F%2Fhttpbin.org%2Fget' }
+  let (:url_redirect_relative) { 'http://httpbin.org/redirect-to?url=%2Fget' }
   let (:url_redirect_many) { 'http://httpbin.org/absolute-redirect/6' }
   let (:url_404) { 'http://httpbin.org/status/404' }
   let (:url_binary) { 'http://httpbin.org/stream-bytes/1024?seed=0' }
@@ -25,13 +26,20 @@ describe GTFS::Fetch do
       end
     end
 
+    it 'follows a relative redirect' do
+      VCR.use_cassette('fetch_redirect_relative') do
+        response = {}
+        GTFS::Fetch.request(url_redirect_relative) { |resp| response = JSON.parse(resp.read_body) }
+        response['url'].should eq(url)
+      end
+    end
+
     it 'follows SSL' do
       VCR.use_cassette('fetch_ssl') do
         response = {}
         GTFS::Fetch.request(url_ssl) { |resp| response = JSON.parse(resp.read_body) }
         response['url'].should eq(url_ssl)
       end
-
     end
 
     it 'follows a redirect no more than limit times' do

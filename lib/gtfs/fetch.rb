@@ -35,8 +35,12 @@ module Fetch
   private
 
   def self.request(url, limit:10, timeout:60, &block)
-    # http://ruby-doc.org/stdlib-2.2.3/libdoc/net/http/rdoc/Net/HTTP.html
-    # Some improvements inspired by
+    # TODO: open-uri would better support redirect, FTP, etc., but these
+    # improvements:
+    #   https://twin.github.io/improving-open-uri/
+    # Net::HTTP example from:
+    #   http://ruby-doc.org/stdlib-2.2.3/libdoc/net/http/rdoc/Net/HTTP.html
+    #   Some improvements inspired by
     #   https://gist.github.com/sekrett/7dd4177d6c87cf8265cd
     raise ArgumentError.new('Too many redirects') if limit == 0
     url = URI.parse(url)
@@ -49,8 +53,11 @@ module Fetch
     http.request_get(url.request_uri) do |response|
       case response
       when Net::HTTPRedirection then
+        location = response['Location']
+        new_url = URI.parse(location)
+        redirect = new_url.relative? ? (url + new_url) : (new_url)
         request(
-          response['location'],
+          redirect.to_s,
           limit:limit-1,
           timeout:timeout,
           &block

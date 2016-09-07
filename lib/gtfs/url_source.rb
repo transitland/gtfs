@@ -4,7 +4,7 @@ module GTFS
       source_url, _, fragment = source.partition('#')
       tmpdir = create_tmpdir
       source_file = File.join(tmpdir, "gtfs_temp_#{Time.now.strftime('%Y%jT%H%M%S%z')}.zip")
-      Fetch.download(source_url, source_file, progress: options[:progress_download])
+      GTFS::Fetch.download(source_url, source_file, progress: options[:progress_download])
       self.class.extract_nested(source_file, fragment, tmpdir)
       # Return unzipped path and source zip file
       return tmpdir, source_file

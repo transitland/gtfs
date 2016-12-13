@@ -66,11 +66,13 @@ module GTFS
     end
 
     def add_date(date)
-      self.added_dates << ServicePeriod.to_date(date)
+      date = ServicePeriod.to_date(date)
+      (self.added_dates << date) if date
     end
 
     def except_date(date)
-      self.except_dates << ServicePeriod.to_date(date)
+      date = ServicePeriod.to_date(date)
+      (self.except_dates << date) if date
     end
 
     def expand_service_range

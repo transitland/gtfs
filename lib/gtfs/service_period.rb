@@ -26,7 +26,11 @@ module GTFS
                   :sunday
 
     def self.to_date(date)
-      date.is_a?(Date) ? date : Date.parse(date)
+      begin
+        date.is_a?(Date) ? date : Date.parse(date)
+      rescue StandardError => e
+        nil
+      end
     end
 
     def self.from_calendar(calendar)
@@ -62,11 +66,13 @@ module GTFS
     end
 
     def add_date(date)
-      self.added_dates << ServicePeriod.to_date(date)
+      date = ServicePeriod.to_date(date)
+      (self.added_dates << date) if date
     end
 
     def except_date(date)
-      self.except_dates << ServicePeriod.to_date(date)
+      date = ServicePeriod.to_date(date)
+      (self.except_dates << date) if date
     end
 
     def expand_service_range

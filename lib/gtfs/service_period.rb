@@ -26,7 +26,11 @@ module GTFS
                   :sunday
 
     def self.to_date(date)
-      date.is_a?(Date) ? date : Date.parse(date)
+      begin
+        date.is_a?(Date) ? date : Date.parse(date)
+      rescue StandardError => e
+        nil
+      end
     end
 
     def self.from_calendar(calendar)

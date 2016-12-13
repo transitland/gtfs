@@ -16,6 +16,18 @@ describe GTFS::ServicePeriod do
     end
   end
 
+  context 'to_date' do
+    it 'handles valid dates' do
+      date = GTFS::ServicePeriod.to_date('2016-01-01')
+      date.should eq Date.parse('2016-01-01')
+    end
+
+    it 'handles invalid dates' do
+      date = GTFS::ServicePeriod.to_date('0')
+      date.should eq nil
+    end
+  end
+
   context 'service_on_date?' do
     let(:sunday) { Date.parse('2016-05-29')}
     let(:other_sunday) { Date.parse('2016-06-05') }

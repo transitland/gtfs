@@ -16,8 +16,13 @@ describe GTFS::ServicePeriod do
     end
   end
 
-  context 'to_date' do
-    it 'handles valid dates' do
+  context '.to_date' do
+    it 'handles date' do
+      date = GTFS::ServicePeriod.to_date(Date.parse('2016-01-01'))
+      date.should eq Date.parse('2016-01-01')
+    end
+
+    it 'handles strings' do
       date = GTFS::ServicePeriod.to_date('2016-01-01')
       date.should eq Date.parse('2016-01-01')
     end
@@ -28,7 +33,39 @@ describe GTFS::ServicePeriod do
     end
   end
 
-  context 'service_on_date?' do
+  context '#add_date' do
+    it 'adds valid date' do
+      date = Date.parse('2016-01-01')
+      sp = GTFS::ServicePeriod.new
+      sp.add_date(date)
+      sp.added_dates.size.should eq 1
+      sp.added_dates.should include date
+    end
+
+    it 'ignores invalid date' do
+      sp = GTFS::ServicePeriod.new
+      sp.add_date(nil)
+      sp.added_dates.size.should eq 0
+    end
+  end
+
+  context '#except_date' do
+    it 'adds valid date' do
+      date = Date.parse('2016-01-01')
+      sp = GTFS::ServicePeriod.new
+      sp.except_date(date)
+      sp.except_dates.size.should eq 1
+      sp.except_dates.should include date
+    end
+
+    it 'ignores invalid date' do
+      sp = GTFS::ServicePeriod.new
+      sp.except_date(nil)
+      sp.except_dates.size.should eq 0
+    end
+  end
+
+  context '#service_on_date?' do
     let(:sunday) { Date.parse('2016-05-29')}
     let(:other_sunday) { Date.parse('2016-06-05') }
     let(:monday) { Date.parse('2016-05-30') }

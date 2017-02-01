@@ -51,7 +51,7 @@ module GTFS
         raise ArgumentError.new('Too many redirects')
       end
       if io.is_a?(StringIO)
-        downloaded = Tempfile.new
+        downloaded = Tempfile.new('gtfs')
         File.write(downloaded.path, io.string)
       else
         downloaded = io

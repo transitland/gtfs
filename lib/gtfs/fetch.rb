@@ -5,6 +5,7 @@ module GTFS
   module Fetch
     def self.download_to_tempfile(url, maxsize: nil, progress: nil)
       file = Tempfile.new(['fetched-feed', '.zip'])
+      file.binmode
       begin
         request(url, max_size: maxsize, progress_proc: progress) { |io| FileUtils.cp(io, file) }
         yield file.path

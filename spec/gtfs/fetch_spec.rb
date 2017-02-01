@@ -13,7 +13,7 @@ describe GTFS::Fetch do
     it 'returns a response' do
       VCR.use_cassette('fetch') do
         response = {}
-        GTFS::Fetch.request(url) { |resp| response = JSON.parse(resp.read_body) }
+        GTFS::Fetch.request(url) { |resp| response = JSON.parse(resp.read) }
         response['url'].should eq(url)
       end
     end
@@ -21,7 +21,7 @@ describe GTFS::Fetch do
     it 'follows a redirect' do
       VCR.use_cassette('fetch_redirect') do
         response = {}
-        GTFS::Fetch.request(url_redirect) { |resp| response = JSON.parse(resp.read_body) }
+        GTFS::Fetch.request(url_redirect) { |resp| response = JSON.parse(resp.read) }
         response['url'].should eq(url)
       end
     end
@@ -29,7 +29,7 @@ describe GTFS::Fetch do
     it 'follows a relative redirect' do
       VCR.use_cassette('fetch_redirect_relative') do
         response = {}
-        GTFS::Fetch.request(url_redirect_relative) { |resp| response = JSON.parse(resp.read_body) }
+        GTFS::Fetch.request(url_redirect_relative) { |resp| response = JSON.parse(resp.read) }
         response['url'].should eq(url)
       end
     end
@@ -37,7 +37,7 @@ describe GTFS::Fetch do
     it 'follows SSL' do
       VCR.use_cassette('fetch_ssl') do
         response = {}
-        GTFS::Fetch.request(url_ssl) { |resp| response = JSON.parse(resp.read_body) }
+        GTFS::Fetch.request(url_ssl) { |resp| response = JSON.parse(resp.read) }
         response['url'].should eq(url_ssl)
       end
     end
@@ -45,7 +45,7 @@ describe GTFS::Fetch do
     it 'follows a redirect no more than limit times' do
       VCR.use_cassette('fetch_redirect_fail') do
         expect {
-          GTFS::Fetch.request(url_redirect_many, limit:2) { |resp| response = JSON.parse(resp.read_body) }
+          GTFS::Fetch.request(url_redirect_many, limit:2) { |resp| response = JSON.parse(resp.read) }
         }.to raise_error(ArgumentError)
       end
     end
@@ -53,8 +53,8 @@ describe GTFS::Fetch do
     it 'raises errors' do
       VCR.use_cassette('fetch_fetch_404') do
         expect {
-          GTFS::Fetch.request(url_404, limit:2) { |resp| response = JSON.parse(resp.read_body) }
-        }.to raise_error(Net::HTTPServerException)
+          GTFS::Fetch.request(url_404, limit:2) { |resp| response = JSON.parse(resp.read) }
+        }.to raise_error(OpenURI::HTTPError)
       end
     end
   end

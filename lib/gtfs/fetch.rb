@@ -17,7 +17,6 @@ module GTFS
     private
 
     def self.request(url, limit: 10, timeout: 60, max_size: nil, progress_proc: nil, &block)
-      max_size ||= 1024*1024*5
       total = nil
       progress_proc ||= lambda { |count, total| }
       uri = URI.parse(url)

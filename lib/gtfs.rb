@@ -24,3 +24,4 @@ require 'gtfs/fetch'
 
 require 'rubyzip_time'
 require 'open-uri'
+require 'net/ftp'

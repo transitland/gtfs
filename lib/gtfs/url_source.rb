@@ -19,7 +19,7 @@ module GTFS
     end
 
     def self.exists?(source)
-      source.start_with?('http')
+      ["http", "https", "ftp"].include?(URI.parse(source).scheme)
     end
   end
 end

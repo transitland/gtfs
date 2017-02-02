@@ -23,3 +23,4 @@ require 'gtfs/wide_time'
 require 'gtfs/fetch'
 
 require 'rubyzip_time'
+require 'open-uri'

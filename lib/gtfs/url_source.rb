@@ -10,8 +10,15 @@ module GTFS
       return tmpdir, source_file
     rescue SocketError => e
       raise InvalidURLException.new(e.message)
-    rescue Net::HTTPServerException => e
-      raise InvalidResponseException.new(e.message, response_code=e.response.code)
+    rescue OpenURI::HTTPError => e
+      response_code = nil
+      begin
+        response_code = e.io.status.first
+      rescue
+      end
+      raise InvalidResponseException.new(e.message, response_code=response_code)
+    rescue Net::FTPError => e
+      raise InvalidResponseException.new(e.message)
     rescue Zip::Error => e
       raise InvalidZipException.new(e.message)
     rescue StandardError => e

@@ -3,7 +3,7 @@ module GTFS
     include GTFS::Model
 
     has_required_attrs :agency_name, :agency_url, :agency_timezone
-    has_optional_attrs :agency_id, :agency_lang, :agency_phone, :agency_fare_url
+    has_optional_attrs :agency_id, :agency_lang, :agency_phone, :agency_fare_url, :agency_email
     attr_accessor *attrs
 
     collection_name :agencies

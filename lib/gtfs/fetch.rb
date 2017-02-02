@@ -3,17 +3,6 @@ require 'uri'
 
 module GTFS
   module Fetch
-    def self.download_to_tempfile(url, maxsize: nil, progress: nil)
-      file = Tempfile.new(['fetched-feed', '.zip'])
-      file.binmode
-      begin
-        request(url, max_size: maxsize, progress_proc: progress) { |io| FileUtils.cp(io, file) }
-        yield file.path
-      ensure
-        file.unlink
-      end
-    end
-
     def self.download(url, filename, maxsize: nil, progress: nil)
       request(
         url,

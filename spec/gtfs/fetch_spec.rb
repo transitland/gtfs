@@ -60,10 +60,21 @@ describe GTFS::Fetch do
   end
 
   context '.download' do
+    def download_to_tempfile(url, maxsize: nil, progress: nil)
+      file = Tempfile.new(['fetched-feed', '.zip'])
+      file.binmode
+      begin
+        GTFS::Fetch.download(url, file.path, maxsize: maxsize, progress: progress)
+        yield file.path
+      ensure
+        file.unlink
+      end
+    end
+
     it 'downloads to temp file' do
       VCR.use_cassette('fetch') do
         data = {}
-        GTFS::Fetch.download_to_tempfile(url) { |filename| data = JSON.parse(File.read(filename))}
+        download_to_tempfile(url) { |filename| data = JSON.parse(File.read(filename))}
         data['url'].should eq(url)
       end
     end
@@ -71,7 +82,7 @@ describe GTFS::Fetch do
     it 'removes tempfile' do
       VCR.use_cassette('fetch') do
         path = nil
-        GTFS::Fetch.download_to_tempfile(url) { |filename| path = filename }
+        download_to_tempfile(url) { |filename| path = filename }
         File.exists?(path).should be false
       end
     end
@@ -79,7 +90,7 @@ describe GTFS::Fetch do
     it 'downloads binary data' do
       VCR.use_cassette('fetch_binary') do
         data = nil
-        GTFS::Fetch.download_to_tempfile(url_binary) { |filename| data = File.read(filename) }
+        download_to_tempfile(url_binary) { |filename| data = File.read(filename) }
         Digest::MD5.new.update(data).hexdigest.should eq('355c7ebd00db307b91ecd23a4215174a')
       end
     end
@@ -88,7 +99,7 @@ describe GTFS::Fetch do
       VCR.use_cassette('fetch_binary') do
         processed = 0
         progress = lambda { |count, total| processed = count }
-        GTFS::Fetch.download_to_tempfile(url_binary, progress: progress) { |filename| data = File.read(filename) }
+        download_to_tempfile(url_binary, progress: progress) { |filename| data = File.read(filename) }
         processed.should eq 1024
       end
     end
@@ -96,7 +107,7 @@ describe GTFS::Fetch do
     it 'allows files smaller than maximum size' do
       VCR.use_cassette('fetch_binary') do
         data = nil
-        GTFS::Fetch.download_to_tempfile(url_binary, maxsize:2048) { |filename| data = File.read(filename) }
+        download_to_tempfile(url_binary, maxsize:2048) { |filename| data = File.read(filename) }
         Digest::MD5.new.update(data).hexdigest.should eq('355c7ebd00db307b91ecd23a4215174a')
       end
     end
@@ -104,7 +115,7 @@ describe GTFS::Fetch do
     it 'raises error if response larger than maximum size' do
       VCR.use_cassette('fetch_binary') do
         expect {
-          GTFS::Fetch.download_to_tempfile(url_binary, maxsize:128) { |filename| }
+          download_to_tempfile(url_binary, maxsize:128) { |filename| }
         }.to raise_error(IOError)
       end
     end

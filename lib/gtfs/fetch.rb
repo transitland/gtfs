@@ -9,7 +9,7 @@ module GTFS
         max_size: maxsize,
         progress_proc: progress
       ) { |io|
-        FileUtils.cp(io, filename)
+        FileUtils.copy_stream(io, filename)
       }
       filename
     end
@@ -39,13 +39,7 @@ module GTFS
         retry if (limit -= 1) > 0
         raise ArgumentError.new('Too many redirects')
       end
-      if io.is_a?(StringIO)
-        downloaded = Tempfile.new('gtfs')
-        File.write(downloaded.path, io.string)
-      else
-        downloaded = io
-      end
-      yield downloaded
+      yield io
     end
   end
 end

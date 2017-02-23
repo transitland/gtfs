@@ -136,8 +136,8 @@ module GTFS
       end
     end
 
-    def shape_line(shape_id)
-      self.load_shapes if @shape_lines.empty?
+    def shape_line(shape_id, include_shape_dist_traveled: false)
+      self.load_shapes(include_shape_dist_traveled: include_shape_dist_traveled) if @shape_lines.empty?
       @shape_lines[shape_id]
     end
 
@@ -205,7 +205,7 @@ module GTFS
       end
     end
 
-    def load_shapes
+    def load_shapes(include_shape_dist_traveled: false)
       # Merge shapes
       @shape_lines.clear
       # Return if missing shapes.txt
@@ -215,7 +215,7 @@ module GTFS
       shapes_merge.each do |k,v|
         @shape_lines[k] = v
           .sort_by { |i| i.shape_pt_sequence.to_i }
-          .map { |i| [i.shape_pt_lon.to_f, i.shape_pt_lat.to_f] }
+          .map { |i| include_shape_dist_traveled ? [[i.shape_pt_lon.to_f, i.shape_pt_lat.to_f], i.shape_dist_traveled.to_f] : [i.shape_pt_lon.to_f, i.shape_pt_lat.to_f] }
       end
       @shape_lines
     end

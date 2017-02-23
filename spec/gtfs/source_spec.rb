@@ -217,6 +217,11 @@ describe GTFS::Source do
     it '#shape_line should returns array of points' do
       source.shape_line('63542').size.should be 9
     end
+
+    it 'returns shape_dist_traveled when include_shape_dist_traveled true' do
+      source.shape_line('63542', include_shape_dist_traveled: true).first[1].should eq 0.0
+      source.shape_line('63542', include_shape_dist_traveled: true).last[1].should eq 0.2572
+    end
   end
 
   describe '#load_service_periods' do

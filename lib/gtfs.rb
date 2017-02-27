@@ -19,6 +19,7 @@ require 'gtfs/source'
 require 'gtfs/zip_source'
 require 'gtfs/url_source'
 require 'gtfs/service_period'
+require 'gtfs/shape_line'
 require 'gtfs/wide_time'
 require 'gtfs/fetch'
 

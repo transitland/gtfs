@@ -213,9 +213,7 @@ module GTFS
       shapes_merge = Hash.new { |h,k| h[k] = [] }
       self.each_shape { |e| shapes_merge[e.shape_id] << e }
       shapes_merge.each do |k,v|
-        @shape_lines[k] = v
-          .sort_by { |i| i.shape_pt_sequence.to_i }
-          .map { |i| [i.shape_pt_lon.to_f, i.shape_pt_lat.to_f] }
+        @shape_lines[k] = ShapeLine.from_shapes(v)
       end
       @shape_lines
     end

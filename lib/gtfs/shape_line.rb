@@ -1,13 +1,14 @@
 module GTFS
   class ShapeLine
     include Enumerable
-    attr_accessor :shapes
+    attr_accessor :shape_id, :shapes
 
     def self.from_shapes(shapes)
-      self.new(shapes.sort_by { |i| i.shape_pt_sequence.to_i })
+      self.new(shapes.first.shape_id, shapes.sort_by { |i| i.shape_pt_sequence.to_i })
     end
 
-    def initialize(shapes=nil)
+    def initialize(shape_id=nil, shapes=nil)
+      @shape_id = shape_id
       @shapes = shapes || []
     end
 

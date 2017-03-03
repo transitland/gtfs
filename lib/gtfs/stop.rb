@@ -18,8 +18,13 @@ module GTFS
     end
 
     def coordinates
-      [stop_lon.to_f, stop_lat.to_f]
+      [s_to_f(stop_lon), s_to_f(stop_lat)]
     end
 
+    private
+
+    def s_to_f(value)
+      value.nil? ? nil : value.to_f
+    end
   end
 end

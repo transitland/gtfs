@@ -21,11 +21,11 @@ module GTFS
     end
 
     def coordinates
-      @shapes.map { |i| [i.shape_pt_lon.to_f, i.shape_pt_lat.to_f] }
+      @shapes.map { |i| [s_to_f(i.shape_pt_lon), s_to_f(i.shape_pt_lat)] }
     end
 
     def shape_dist_traveled
-      @shapes.map { |i| i.shape_dist_traveled.to_f }
+      @shapes.map { |i| s_to_f(i.shape_dist_traveled) }
     end
 
     def each(&block)
@@ -34,6 +34,12 @@ module GTFS
 
     def size
       @shapes.size
+    end
+
+    private
+
+    def s_to_f(value)
+      value.nil? ? nil : value.to_f
     end
   end
 end

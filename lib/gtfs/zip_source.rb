@@ -16,17 +16,14 @@ module GTFS
       # Recursively extract GTFS CSV files from (possibly nested) Zips.
       source, _, fragment = source.partition('#')
       source = "." if source == ""
-      # puts "path: #{path} fragment: #{fragment} tmpdir: #{tmpdir}"
+      source = URI::decode(source)
       Zip::File.open(filename) do |zip|
         zip.entries.each do |entry|
           entry_dir, entry_name = File.split(entry.name)
           entry_ext = File.extname(entry_name)
-          # puts "entry_dir: #{entry_dir} entry_name: #{entry_name} entry_ext: #{entry_ext}"
           if entry_dir == source && SOURCE_FILES.key?(entry_name)
-            # puts "\textract file: #{entry.name}"
             entry.extract(File.join(tmpdir, entry_name))
           elsif entry.name == source && entry_ext == '.zip'
-            # puts "\textract zip: #{entry.name}"
             extract_entry_zip(entry) do |tmppath|
               extract_nested(tmppath, fragment, tmpdir)
             end

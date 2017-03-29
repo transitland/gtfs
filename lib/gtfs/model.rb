@@ -81,6 +81,7 @@ module GTFS
         raise InvalidSourceException.new("File does not exist: #{filename}") unless File.exists?(filename)
         File.open(filename, encoding: 'bom|utf-8') do |f|
           Rcsv.parse(f, nostrict: true, columns: {}, header: :use, row_as_hash: true, parse_empty_fields_as: :nil) do |row|
+            row.each { |k,v| row[k] = v.nil? ? nil : v.freeze }
             model = self.new(row)
             model.feed = feed
             yield model if options[:strict] == false || model.valid?

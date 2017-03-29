@@ -5,6 +5,8 @@ module GTFS
     has_required_attrs :route_id, :service_id, :trip_id
     has_optional_attrs :trip_headsign, :trip_short_name, :direction_id, :block_id, :shape_id, :wheelchair_accessible, :bikes_allowed
     attr_accessor *attrs
+    attr_accessor :stop_sequence
+    attr_accessor :shape_dist_traveled
 
     collection_name :trips
     required_file true
@@ -15,7 +17,8 @@ module GTFS
     end
 
     def stops
-      self.feed.children(self)
+      self.stop_sequence.to_set
+      # self.feed.children(self)
     end
   end
 end

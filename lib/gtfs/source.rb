@@ -195,13 +195,21 @@ module GTFS
         progress_block.call(count, total, e)
       end
       # Count StopTimes by Trip; link Stops to Trips
-      self.each_stop_time do |e|
-        trip = self.trip(e.trip_id)
-        stop = self.stop(e.stop_id)
+      trip_stop_sequence = {}
+      self.each_stop_time do |stop_time|
+        trip = self.trip(stop_time.trip_id)
+        stop = self.stop(stop_time.stop_id)
+        trip_stop_sequence[trip] ||= []
+        trip_stop_sequence[trip] << [stop_time.stop_sequence.to_i, stop, stop_time.shape_dist_traveled]
         self.pclink(trip, stop)
         @trip_counter[trip] += 1
         count += 1
-        progress_block.call(count, total, e)
+        progress_block.call(count, total, nil)
+      end
+      trip_stop_sequence.each do |trip, seq|
+        seq = seq.sort
+        trip.stop_sequence = seq.map { |i| i[1] }
+        trip.shape_dist_traveled = seq.map { |i| i[2] }
       end
     end
 

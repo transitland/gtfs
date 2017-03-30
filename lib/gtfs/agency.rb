@@ -33,7 +33,7 @@ module GTFS
     end
 
     def routes
-      self.feed.children(self)
+      children
     end
   end
 end

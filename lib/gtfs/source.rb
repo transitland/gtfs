@@ -30,9 +30,6 @@ module GTFS
       raise 'Source cannot be nil' if source.nil?
       # Cache
       @cache = {}
-      # Parents/children
-      @parents = Hash.new { |h,k| h[k] = Set.new }
-      @children = Hash.new { |h,k| h[k] = Set.new }
       # Trip counter
       @trip_counter = Hash.new { |h,k| h[k] = 0 }
       # Merged calendars
@@ -85,17 +82,12 @@ module GTFS
 
     ##### Relationships #####
 
-    def pclink(parent, child)
-      @parents[child] << parent
-      @children[parent] << child
-    end
-
     def parents(entity)
-      @parents[entity]
+      entity.parents
     end
 
     def children(entity)
-      @children[entity]
+      entity.children
     end
 
     ##### Cache #####
@@ -161,8 +153,6 @@ module GTFS
       progress_block ||= Proc.new { |count, total, entity| }
       # Clear
       @cache.clear
-      @parents.clear
-      @children.clear
       @trip_counter.clear
       # Row count for progress bar...
       count = 0
@@ -179,13 +169,13 @@ module GTFS
       end
       # Load Routes; link to agencies
       self.routes.each do |e|
-        self.pclink(self.agency(e.agency_id) || default_agency, e)
+        (self.agency(e.agency_id) || default_agency).pclink(e)
         count += 1
         progress_block.call(count, total, e)
       end
       # Load Trips; link to routes
       self.trips.each do |e|
-        self.pclink(self.route(e.route_id), e)
+        self.route(e.route_id).pclink(e)
         count += 1
         progress_block.call(count, total, e)
       end
@@ -201,7 +191,6 @@ module GTFS
         stop = self.stop(stop_time.stop_id)
         trip_stop_sequence[trip] ||= []
         trip_stop_sequence[trip] << [stop_time.stop_sequence.to_i, stop, stop_time.shape_dist_traveled]
-        self.pclink(trip, stop)
         @trip_counter[trip] += 1
         count += 1
         progress_block.call(count, total, nil)

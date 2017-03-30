@@ -176,7 +176,7 @@ module GTFS
     end
 
     def trips
-      self.feed.children(self)
+      children
     end
   end
 end

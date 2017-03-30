@@ -17,8 +17,7 @@ module GTFS
     end
 
     def stops
-      self.stop_sequence.to_set
-      # self.feed.children(self)
+      (self.stop_sequence || []).to_set
     end
   end
 end

@@ -5,8 +5,6 @@ module GTFS
     has_required_attrs :route_id, :service_id, :trip_id
     has_optional_attrs :trip_headsign, :trip_short_name, :direction_id, :block_id, :shape_id, :wheelchair_accessible, :bikes_allowed
     attr_accessor *attrs
-    attr_accessor :stop_sequence
-    attr_accessor :shape_dist_traveled
 
     collection_name :trips
     required_file true
@@ -17,7 +15,23 @@ module GTFS
     end
 
     def stops
-      (self.stop_sequence || []).to_set
+      stop_sequence.to_set
+    end
+
+    def stop_sequence
+      @stop_sequence ||= []
+    end
+
+    def stop_sequence=(value)
+      @stop_sequence = value
+    end
+
+    def shape_dist_traveled
+      @shape_dist_traveled
+    end
+
+    def shape_dist_traveled=(value)
+      @shape_dist_traveled = value
     end
   end
 end

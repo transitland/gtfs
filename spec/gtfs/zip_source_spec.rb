@@ -59,6 +59,14 @@ describe GTFS::ZipSource do
       tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip_single_source, path, @tmpdir, @options)
       GTFS::ZipSource.required_files_present?(Dir.entries(tmpdir)).should be true
     end
+
+
+    it 'extracts nested multipe roots throw an exception without fragment' do
+      path = ""
+      expect { 
+        tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmpdir, @options)
+      }.to raise_error(GTFS::AmbiguousZipException)
+    end
   end
 
   describe '.find_gtfs_paths' do

@@ -21,7 +21,9 @@ module GTFS
         sources = GTFS::ZipSource.find_gtfs_paths(filename)
         # If there's an unique source not the root folder, extract from it instead
         if sources.length == 1 && sources.first != "" then
-          return extract_nested(filename, sources.first, tmpdir, options)  
+          return extract_nested(filename, sources.first, tmpdir, options)
+        elsif sources.length > 1 && !sources.includes?("")
+          raise GTFS::AmbiguousZipException
         end
       end
 

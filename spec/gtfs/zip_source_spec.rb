@@ -27,7 +27,7 @@ describe GTFS::ZipSource do
   describe '.extract_nested' do
     before(:each) { 
       @tmpdir = Dir.mktmpdir
-      @options = GTFS::Source::DEFAULT_OPTIONS.clone
+      @options = {auto_detect_root: true}
     }
     after(:each) { FileUtils.rm_rf(@tmpdir) }
 

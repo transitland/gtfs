@@ -22,7 +22,7 @@ module GTFS
       GTFS::FeedInfo
     ]
     SOURCE_FILES = Hash[ENTITIES.map { |e| [e.filename, e] }]
-    DEFAULT_OPTIONS = {strict: true, auto_detect_root: true}
+    DEFAULT_OPTIONS = {strict: true, auto_detect_root: false}
 
     attr_accessor :source, :archive, :path, :options
 

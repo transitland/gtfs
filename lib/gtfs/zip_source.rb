@@ -25,9 +25,10 @@ module GTFS
           source.partition('#').first
         }
 
-        # If there's an unique source not the root folder, extract from it instead
+        # If there's an unique source extract from it instead
         if sources.length == 1 && sources.first != source then
           return extract_nested(filename, sources.first, tmpdir, options)
+        # If there are multiple sources, none corresponding requested fragment, fail
         elsif sources.length > 1 && !sources.include?(source)
           raise GTFS::AmbiguousZipException
         end

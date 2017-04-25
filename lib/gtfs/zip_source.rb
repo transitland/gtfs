@@ -17,12 +17,12 @@ module GTFS
       source, _, fragment = source.partition('#')
 
       # attempt to detect source of gtfs files
-      if source == "" && options[:auto_detect_root] then
+      if options[:auto_detect_root] then
         sources = GTFS::ZipSource.find_gtfs_paths(filename)
         # If there's an unique source not the root folder, extract from it instead
-        if sources.length == 1 && sources.first != "" then
+        if sources.length == 1 && sources.first != source then
           return extract_nested(filename, sources.first, tmpdir, options)
-        elsif sources.length > 1 && !sources.includes?("")
+        elsif sources.length > 1 && !sources.includes?(source)
           raise GTFS::AmbiguousZipException
         end
       end

@@ -49,6 +49,12 @@ describe GTFS::ZipSource do
       GTFS::ZipSource.required_files_present?(Dir.entries(tmpdir)).should be true
     end
 
+    it 'extracts nested single nested zip without fragment should fail by default' do
+      path = ""
+      tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip_single_source, path, @tmpdir, GTFS::Source::DEFAULT_OPTIONS)
+      GTFS::ZipSource.required_files_present?(Dir.entries(tmpdir)).should be false
+    end
+
     it 'extracts nested single nested zip without fragment' do
       path = ""
       tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip_single_source, path, @tmpdir, @options)

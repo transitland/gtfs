@@ -19,10 +19,16 @@ module GTFS
       # attempt to detect source of gtfs files
       if options[:auto_detect_root] then
         sources = GTFS::ZipSource.find_gtfs_paths(filename)
+        # clean names because of extra #
+        sources = sources.map {
+          |source| 
+          source.partition('#').first
+        }
+
         # If there's an unique source not the root folder, extract from it instead
         if sources.length == 1 && sources.first != source then
           return extract_nested(filename, sources.first, tmpdir, options)
-        elsif sources.length > 1 && !sources.includes?(source)
+        elsif sources.length > 1 && !sources.include?(source)
           raise GTFS::AmbiguousZipException
         end
       end

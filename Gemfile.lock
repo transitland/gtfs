@@ -41,6 +41,3 @@ DEPENDENCIES
   rubyzip (~> 1.1)
   simplecov
   vcr
-
-BUNDLED WITH
-   1.10.6

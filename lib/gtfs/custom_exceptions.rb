@@ -24,6 +24,10 @@ module GTFS
     # Invalid Zip
   end
 
+  class AmbiguousZipException < InvalidZipException
+    # Multiple gtfs roots found in the source
+  end
+
   class InvalidCSVException < InvalidSourceException
     # Invalid CSV data
   end

@@ -15,7 +15,23 @@ module GTFS
     end
 
     def stops
-      self.feed.children(self)
+      stop_sequence.to_set
+    end
+
+    def stop_sequence
+      @stop_sequence ||= []
+    end
+
+    def stop_sequence=(value)
+      @stop_sequence = value
+    end
+
+    def shape_dist_traveled
+      @shape_dist_traveled
+    end
+
+    def shape_dist_traveled=(value)
+      @shape_dist_traveled = value
     end
   end
 end

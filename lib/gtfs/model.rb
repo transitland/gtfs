@@ -26,6 +26,19 @@ module GTFS
       def name
       end
 
+      def parents
+        @parents ||= Set.new
+      end
+
+      def children
+        @children ||= Set.new
+      end
+
+      def pclink(other)
+        return if other.nil?
+        self.children << other
+        other.parents << self
+      end
     end
 
     module ClassMethods

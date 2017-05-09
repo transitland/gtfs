@@ -24,6 +24,7 @@ module GTFS
     SOURCE_FILES = Hash[ENTITIES.map { |e| [e.filename, e] }]
     DEFAULT_OPTIONS = {
       strict: true,
+      use_frozen: false,
       use_symbols: false
     }
 

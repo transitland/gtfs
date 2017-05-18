@@ -1,10 +1,9 @@
 module GTFS
   class ZipSource < Source
     def load_archive(source)
-      @source_filenames = []
       source_file, _, fragment = source.partition('#')
       tmpdir = create_tmpdir
-      self.class.extract_nested(source_file, fragment, tmpdir, options, source_filenames: @source_filenames)
+      @source_filenames = self.class.extract_nested(source_file, fragment, tmpdir, options)
       # Return unzipped path and source zip file
       return tmpdir, source_file
     rescue Zip::Error => e
@@ -17,6 +16,9 @@ module GTFS
       # Recursively extract GTFS CSV files from (possibly nested) Zips.
       source, _, fragment = source.partition('#')
 
+      # Keep track of files in target source, even if not extracted
+      source_filenames ||= []
+
       # attempt to detect source of gtfs files
       if options[:auto_detect_root] then
         sources = GTFS::ZipSource.find_gtfs_paths(filename)
@@ -28,7 +30,7 @@ module GTFS
 
         # If there's an unique source extract from it instead
         if sources.length == 1 && sources.first != source then
-          return extract_nested(filename, sources.first, tmpdir, options)
+          return extract_nested(filename, sources.first, tmpdir, options, source_filenames: source_filenames)
         # If there are multiple sources, none corresponding requested fragment, fail
         elsif sources.length > 1 && !sources.include?(source)
           raise GTFS::AmbiguousZipException
@@ -37,8 +39,6 @@ module GTFS
 
       source = "." if source == ""
       source = URI::decode(source)
-      # Keep track of files in target source, even if not extracted
-      source_filenames ||= []
       Zip::File.open(filename) do |zip|
         zip.entries.each do |entry|
           entry_dir, entry_name = File.split(entry.name)
@@ -48,16 +48,16 @@ module GTFS
             entry.extract(File.join(tmpdir, entry_name)) if SOURCE_FILES.key?(entry_name)
           elsif entry.name == source && entry_ext == '.zip'
             extract_entry_zip(entry) do |tmppath|
-              extract_nested(tmppath, fragment, tmpdir, options, source_filenames: nil)
+              extract_nested(tmppath, fragment, tmpdir, options, source_filenames: source_filenames)
             end
           end
         end
       end
-      tmpdir
+      source_filenames
     end
 
     def source_filenames
-      @source_filenames || []
+      @source_filenames
     end
 
     def self.find_gtfs_paths(filename)

@@ -25,7 +25,7 @@ describe GTFS::ZipSource do
   end
 
   describe '.extract_nested' do
-    before(:each) { 
+    before(:each) {
       @tmpdir = Dir.mktmpdir
       @options = {auto_detect_root: true}
     }
@@ -69,9 +69,30 @@ describe GTFS::ZipSource do
 
     it 'extracts nested multipe roots throw an exception without fragment' do
       path = ""
-      expect { 
+      expect {
         tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmpdir, @options)
       }.to raise_error(GTFS::AmbiguousZipException)
+    end
+
+    it 'keeps track of files in target' do
+      source_filenames = []
+      path = ""
+      tmpdir = GTFS::ZipSource.extract_nested(source_valid_zip, path, @tmpdir, @options, source_filenames: source_filenames)
+      expected_filenames = [
+        "agency.txt",
+        "calendar.txt",
+        "calendar_dates.txt",
+        "fare_attributes.txt",
+        "fare_rules.txt",
+        "feed_info.txt",
+        "frequencies.txt",
+        "routes.txt",
+        "shapes.txt",
+        "stop_times.txt",
+        "trips.txt",
+        "stops.txt"
+      ]
+      source_filenames.should =~ expected_filenames
     end
   end
 

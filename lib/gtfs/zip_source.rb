@@ -1,9 +1,10 @@
 module GTFS
   class ZipSource < Source
     def load_archive(source)
+      @source_filenames = []
       source_file, _, fragment = source.partition('#')
       tmpdir = create_tmpdir
-      self.class.extract_nested(source_file, fragment, tmpdir, options)
+      self.class.extract_nested(source_file, fragment, tmpdir, options, source_filenames: @source_filenames)
       # Return unzipped path and source zip file
       return tmpdir, source_file
     rescue Zip::Error => e
@@ -12,7 +13,7 @@ module GTFS
       raise InvalidSourceException.new(e.message)
     end
 
-    def self.extract_nested(filename, source, tmpdir, options)
+    def self.extract_nested(filename, source, tmpdir, options, source_filenames: nil)
       # Recursively extract GTFS CSV files from (possibly nested) Zips.
       source, _, fragment = source.partition('#')
 
@@ -21,7 +22,7 @@ module GTFS
         sources = GTFS::ZipSource.find_gtfs_paths(filename)
         # clean names because of extra #
         sources = sources.map {
-          |source| 
+          |source|
           source.partition('#').first
         }
 
@@ -36,20 +37,27 @@ module GTFS
 
       source = "." if source == ""
       source = URI::decode(source)
+      # Keep track of files in target source, even if not extracted
+      source_filenames ||= []
       Zip::File.open(filename) do |zip|
         zip.entries.each do |entry|
           entry_dir, entry_name = File.split(entry.name)
           entry_ext = File.extname(entry_name)
-          if entry_dir == source && SOURCE_FILES.key?(entry_name)
-            entry.extract(File.join(tmpdir, entry_name))
+          if entry_dir == source
+            source_filenames << entry_name
+            entry.extract(File.join(tmpdir, entry_name)) if SOURCE_FILES.key?(entry_name)
           elsif entry.name == source && entry_ext == '.zip'
             extract_entry_zip(entry) do |tmppath|
-              extract_nested(tmppath, fragment, tmpdir, options)
+              extract_nested(tmppath, fragment, tmpdir, options, source_filenames: nil)
             end
           end
         end
       end
       tmpdir
+    end
+
+    def source_filenames
+      @source_filenames || []
     end
 
     def self.find_gtfs_paths(filename)

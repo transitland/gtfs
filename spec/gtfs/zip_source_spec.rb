@@ -8,6 +8,7 @@ describe GTFS::ZipSource do
   let(:source_subfolder_single_source) { File.join(source_root, 'fixtures', 'example_subfolder_single_source.zip') }
   let(:source_fragment) { source_nested_zip + '#' + 'example_nested/nested/example.zip'}
   let(:expected_files) { ['stops.txt', 'routes.txt', 'trips.txt', 'agency.txt', 'stop_times.txt'] }
+  let(:expected_filenames) { ["agency.txt", "calendar.txt", "calendar_dates.txt", "fare_attributes.txt", "fare_rules.txt", "feed_info.txt", "frequencies.txt", "routes.txt", "shapes.txt", "stop_times.txt", "stops.txt", "trips.txt"] }
 
   describe '#load_archive' do
     it 'extracts nested zip' do
@@ -24,8 +25,20 @@ describe GTFS::ZipSource do
     end
   end
 
+  describe '.source_filenames' do
+    it 'returns source filenames' do
+      feed = GTFS::ZipSource.new(source_valid_zip)
+      feed.source_filenames.should =~ expected_filenames
+    end
+
+    it 'returns source filenames nested' do
+      feed = GTFS::ZipSource.new(source_fragment)
+      feed.source_filenames.should =~ expected_filenames
+    end
+  end
+
   describe '.extract_nested' do
-    before(:each) { 
+    before(:each) {
       @tmpdir = Dir.mktmpdir
       @options = {auto_detect_root: true}
     }
@@ -33,45 +46,51 @@ describe GTFS::ZipSource do
 
     it 'extracts flat path' do
       path = ""
-      tmpdir = GTFS::ZipSource.extract_nested(source_valid_zip, path, @tmpdir, @options)
-      GTFS::ZipSource.required_files_present?(Dir.entries(tmpdir)).should be true
+      GTFS::ZipSource.extract_nested(source_valid_zip, path, @tmpdir, @options)
+      GTFS::ZipSource.required_files_present?(Dir.entries(@tmpdir)).should be true
     end
 
     it 'extracts nested directory' do
       path = "example_nested/example"
-      tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmpdir, @options)
-      GTFS::ZipSource.required_files_present?(Dir.entries(tmpdir)).should be true
+      GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmpdir, @options)
+      GTFS::ZipSource.required_files_present?(Dir.entries(@tmpdir)).should be true
     end
 
     it 'extracts nested zip' do
       path = "example_nested/nested/example.zip"
-      tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmpdir, @options)
-      GTFS::ZipSource.required_files_present?(Dir.entries(tmpdir)).should be true
+      GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmpdir, @options)
+      GTFS::ZipSource.required_files_present?(Dir.entries(@tmpdir)).should be true
     end
 
     it 'extracts nested single nested zip without fragment should fail by default' do
       path = ""
-      tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip_single_source, path, @tmpdir, GTFS::Source::DEFAULT_OPTIONS)
-      GTFS::ZipSource.required_files_present?(Dir.entries(tmpdir)).should be false
+      GTFS::ZipSource.extract_nested(source_nested_zip_single_source, path, @tmpdir, GTFS::Source::DEFAULT_OPTIONS)
+      GTFS::ZipSource.required_files_present?(Dir.entries(@tmpdir)).should be false
     end
 
     it 'extracts nested single nested zip without fragment' do
       path = ""
-      tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip_single_source, path, @tmpdir, @options)
-      GTFS::ZipSource.required_files_present?(Dir.entries(tmpdir)).should be true
+      GTFS::ZipSource.extract_nested(source_nested_zip_single_source, path, @tmpdir, @options)
+      GTFS::ZipSource.required_files_present?(Dir.entries(@tmpdir)).should be true
     end
 
     it 'extracts nested single nested subfolders without fragment' do
       path = ""
-      tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip_single_source, path, @tmpdir, @options)
-      GTFS::ZipSource.required_files_present?(Dir.entries(tmpdir)).should be true
+      GTFS::ZipSource.extract_nested(source_nested_zip_single_source, path, @tmpdir, @options)
+      GTFS::ZipSource.required_files_present?(Dir.entries(@tmpdir)).should be true
     end
 
     it 'extracts nested multipe roots throw an exception without fragment' do
       path = ""
-      expect { 
-        tmpdir = GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmpdir, @options)
+      expect {
+        GTFS::ZipSource.extract_nested(source_nested_zip, path, @tmpdir, @options)
       }.to raise_error(GTFS::AmbiguousZipException)
+    end
+
+    it 'keeps track of files in target' do
+      path = ""
+      source_filenames = GTFS::ZipSource.extract_nested(source_valid_zip, path, @tmpdir, @options)
+      source_filenames.should =~ expected_filenames
     end
   end
 

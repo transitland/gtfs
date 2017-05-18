@@ -66,6 +66,10 @@ module GTFS
       File.exists?(file_path(filename))
     end
 
+    def source_filenames
+      Dir.entries(@path).select{ |f| File.file?(File.join(@path, f)) }
+    end
+
     def valid?
       return false unless File.exists?(@path)
       self.class.required_files_present?(Dir.entries(@path))

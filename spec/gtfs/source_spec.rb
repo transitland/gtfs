@@ -6,6 +6,7 @@ describe GTFS::Source do
   let(:source_valid_zip) { File.join(source_root, 'fixtures', 'example.zip') }
   let(:source_missing) { File.join(source_root, 'fixtures', 'not_here') }
   let(:source_missing_required_files) { File.join(source_root, 'fixtures', 'missing_files') }
+  let(:expected_filenames) { ["agency.txt", "calendar.txt", "calendar_dates.txt", "routes.txt", "shapes.txt", "stop_times.txt", "stops.txt", "trips.txt", "LICENSE.txt"] }
 
   describe '.build' do
     let(:opts) {{}}
@@ -53,6 +54,13 @@ describe GTFS::Source do
     context 'with a source path that is missing files' do
       let(:source_path) {source_missing}
       it {should raise_error(GTFS::InvalidSourceException)}
+    end
+  end
+
+  describe '.source_filenames' do
+    it 'returns source filenames' do
+      feed = GTFS::Source.new(source_valid)
+      feed.source_filenames.should =~ expected_filenames
     end
   end
 

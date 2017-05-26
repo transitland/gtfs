@@ -22,8 +22,10 @@ module GTFS
       GTFS::FeedInfo
     ]
     SOURCE_FILES = Hash[ENTITIES.map { |e| [e.filename, e] }]
+
     DEFAULT_OPTIONS = {
       strict: true,
+      auto_detect_root: false,
       use_symbols: false
     }
 
@@ -67,6 +69,10 @@ module GTFS
 
     def file_present?(filename)
       File.exists?(file_path(filename))
+    end
+
+    def source_filenames
+      Dir.entries(@path).select{ |f| File.file?(File.join(@path, f)) }
     end
 
     def valid?

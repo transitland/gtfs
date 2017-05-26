@@ -36,6 +36,13 @@ describe GTFS::Source do
       let(:opts) {{strict: false}}
       # its(:options) {should == {strict: false}}
     end
+
+    context 'use_symbols' do
+      let(:opts) {{use_symbols: true}}
+      it 'loads with symbols' do
+        subject.stops.first.id.is_a?(Symbol).should be true
+      end
+    end
   end
 
   describe '#new' do

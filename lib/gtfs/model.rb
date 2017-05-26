@@ -94,9 +94,7 @@ module GTFS
         raise InvalidSourceException.new("File does not exist: #{filename}") unless File.exists?(filename)
         File.open(filename, encoding: 'bom|utf-8') do |f|
           Rcsv.parse(f, nostrict: true, columns: {}, header: :use, row_as_hash: true, parse_empty_fields_as: :nil) do |row|
-            if options[:use_frozen_strings]
-              row.each { |k,v| row[k] = v.nil? ? nil : v.freeze }
-            elsif options[:use_symbols]
+            if options[:use_symbols]
               row.each { |k,v| row[k] = v.nil? ? nil : v.to_sym }
             end
             model = self.new(row)

@@ -22,6 +22,7 @@ require 'gtfs/service_period'
 require 'gtfs/shape_line'
 require 'gtfs/wide_time'
 require 'gtfs/fetch'
+require 'gtfs/parse'
 
 require 'rubyzip_time'
 require 'open-uri'

@@ -1,5 +1,3 @@
-require 'rcsv'
-
 module GTFS
   module Model
     def self.included(base)
@@ -92,15 +90,10 @@ module GTFS
 
       def each(filename, options={}, feed=nil)
         raise InvalidSourceException.new("File does not exist: #{filename}") unless File.exists?(filename)
-        File.open(filename, encoding: 'bom|utf-8') do |f|
-          Rcsv.parse(f, nostrict: true, columns: {}, header: :use, row_as_hash: true, parse_empty_fields_as: :nil) do |row|
-            if options[:use_symbols]
-              row.each { |k,v| row[k] = v.nil? ? nil : v.to_sym }
-            end
-            model = self.new(row)
-            model.feed = feed
-            yield model if options[:strict] == false || model.valid?
-          end
+        GTFS::Parse.parse_filename(filename, use_symbols: options[:use_symbols], skip_inequal_rows: options[:skip_inequal_rows]) do |row|
+          model = self.new(row)
+          model.feed = feed
+          yield model if options[:strict] == false || model.valid?
         end
       end
 
@@ -108,7 +101,7 @@ module GTFS
       def parse_models(data, options={}, feed=nil)
         return [] if data.nil? || data.empty?
         models = []
-        Rcsv.parse(data, nostrict: true, columns: {}, header: :use, row_as_hash: true, parse_empty_fields_as: :nil) do |row|
+        GTFS::Parse.parse_data(data, use_symbols: options[:use_symbols], skip_inequal_rows: options[:skip_inequal_rows]) do |row|
           model = self.new(row.to_hash)
           model.feed = feed
           models << model if options[:strict] == false || model.valid?

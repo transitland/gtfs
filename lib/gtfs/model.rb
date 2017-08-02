@@ -21,6 +21,10 @@ module GTFS
       def id
       end
 
+      def <=>(other)
+        id <=> other.id
+      end
+
       def name
       end
 

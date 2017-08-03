@@ -160,15 +160,18 @@ module GTFS
       # Progress callback
       progress_block ||= options[:progress_graph]
       progress_block ||= Proc.new { |count, total, entity| }
+
       # Clear
       @cache.clear
       @trip_counter.clear
+
       # Row count for progress bar...
       count = 0
       total = 0
       [GTFS::Agency, GTFS::Route, GTFS::Trip, GTFS::Stop, GTFS::StopTime].each do |e|
         total += row_count(e.filename)
       end
+
       # Load Agencies
       default_agency = nil
       self.agencies.each do |e|
@@ -176,28 +179,47 @@ module GTFS
         count += 1
         progress_block.call(count, total, e)
       end
+      fail Exception.new('agency.txt: no default agency') if default_agency.nil?
+
       # Load Routes; link to agencies
       self.routes.each do |e|
+        # if route.agency_id is present but no agency exists, should raise a warning.
         (self.agency(e.agency_id) || default_agency).pclink(e)
         count += 1
         progress_block.call(count, total, e)
       end
+
       # Load Trips; link to routes
       self.trips.each do |e|
-        self.route(e.route_id).pclink(e)
+        route = self.route(e.route_id)
+        if route.nil?
+          puts "trips.txt: route not found: #{e.route_id}"
+          next
+        end
+        route.pclink(e)
         count += 1
         progress_block.call(count, total, e)
       end
+
       # Load Stops
       self.stops.each do |e|
         count += 1
         progress_block.call(count, total, e)
       end
+
       # Count StopTimes by Trip; link Stops to Trips
       trip_stop_sequence = {}
       self.each_stop_time do |stop_time|
         trip = self.trip(stop_time.trip_id)
         stop = self.stop(stop_time.stop_id)
+        if trip.nil?
+          puts "stop_times.txt: trip not found: #{stop_time.trip_id}"
+          next
+        end
+        if stop.nil?
+          puts "stop_times.txt: stop not found: #{stop_time.stop_id}"
+          next
+        end
         trip_stop_sequence[trip] ||= []
         trip_stop_sequence[trip] << [stop_time.stop_sequence.to_i, stop_time.shape_dist_traveled, stop]
         @trip_counter[trip] += 1

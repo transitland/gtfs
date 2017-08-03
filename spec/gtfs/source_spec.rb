@@ -79,7 +79,7 @@ describe GTFS::Source do
   end
 
   describe 'load_graph' do
-    let(:source) {GTFS::Source.build(source_valid)}
+    let(:source) {GTFS::Source.build(source_valid_zip)}
     it 'test' do
       source.load_graph
     end
@@ -87,9 +87,9 @@ describe GTFS::Source do
     it 'calls progress callback' do
       processed = 0
       progress = lambda { |count, total, entity| processed = count }
-      source = GTFS::Source.build(source_valid, {progress_graph: progress})
+      source = GTFS::Source.build(source_valid_zip, {progress_graph: progress})
       source.load_graph
-      processed.should eq 115
+      processed.should eq 54
     end
   end
 

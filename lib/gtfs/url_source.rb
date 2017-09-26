@@ -10,6 +10,8 @@ module GTFS
       return tmpdir, source_file
     rescue SocketError => e
       raise InvalidURLException.new(e.message)
+    rescue OpenSSL::SSL::SSLError => e
+      raise InvalidURLException.new(e.message)
     rescue OpenURI::HTTPError => e
       response_code = nil
       begin

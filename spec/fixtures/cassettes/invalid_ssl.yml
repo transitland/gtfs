@@ -1,0 +1,51 @@
+---
+- !ruby/struct:VCR::HTTPInteraction
+  request: !ruby/struct:VCR::Request
+    method: :get
+    uri: https://expired.badssl.com:443/
+    body: 
+    headers:
+      accept-encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response: !ruby/struct:VCR::Response
+    status: !ruby/struct:VCR::ResponseStatus
+      code: 200
+      message: OK
+    headers:
+      server:
+      - nginx/1.10.3 (Ubuntu)
+      date:
+      - Tue, 26 Sep 2017 23:41:43 GMT
+      content-type:
+      - text/html
+      last-modified:
+      - Thu, 07 Sep 2017 18:18:21 GMT
+      transfer-encoding:
+      - chunked
+      connection:
+      - keep-alive
+      etag:
+      - W/"59b18d6d-1d5"
+      cache-control:
+      - no-store
+    body: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="/icons/favicon-red.ico"/>
+        <link rel="apple-touch-icon" href="/icons/icon-red.png"/>
+        <title>expired.badssl.com</title>
+        <link rel="stylesheet" href="/style.css">
+        <style>body { background: red; }</style>
+      </head>
+      <body>
+      <div id="content">
+        <h1 style="font-size: 12vw;">
+          expired.<br>badssl.com
+        </h1>
+      </div>
+
+      </body>
+      </html>
+    http_version: '1.1'

@@ -39,7 +39,7 @@ describe GTFS::URLSource do
     end
   end
 
-  # VCR cannot simulate SSL failures.
+  # VCR cannot simulate SSL failures - tested manually w/o VCR.
   # context 'with a bad ssl certificate' do
   #   let(:source_path) { 'https://expired.badssl.com/' }
   #   it 'fails by default' do

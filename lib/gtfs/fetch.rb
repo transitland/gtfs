@@ -3,9 +3,10 @@ require 'uri'
 
 module GTFS
   module Fetch
-    def self.download(url, filename, maxsize: nil, progress: nil)
+    def self.download(url, filename, maxsize: nil, ssl_verify: true, progress: nil)
       request(
         url,
+        ssl_verify: ssl_verify,
         max_size: maxsize,
         progress_proc: progress
       ) { |io|
@@ -16,13 +17,18 @@ module GTFS
 
     private
 
-    def self.request(url, limit: 10, timeout: 60, max_size: nil, progress_proc: nil, &block)
+    def self.request(url, limit: 10, timeout: 60, max_size: nil, ssl_verify: true, progress_proc: nil, &block)
       total = nil
+      ssl_verify_mode = nil
+      if ssl_verify == false
+        ssl_verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end
       progress_proc ||= lambda { |count, total| }
       uri = URI.parse(url)
       io = nil
       begin
         io = uri.open(
+          ssl_verify_mode: ssl_verify_mode,
           redirect: false,
           read_timeout: timeout,
           content_length_proc: ->(size) {

@@ -39,6 +39,21 @@ describe GTFS::URLSource do
     end
   end
 
+  # VCR cannot simulate SSL failures - tested manually w/o VCR.
+  # context 'with a bad ssl certificate' do
+  #   let(:source_path) { 'https://expired.badssl.com/' }
+  #   it 'fails by default' do
+  #     VCR.use_cassette('invalid_ssl') do
+  #       lambda {GTFS::URLSource.new(source_path, {})}.should raise_error(GTFS::InvalidURLException)
+  #     end
+  #   end
+  #   it 'regular failure with ssl_verify=false' do
+  #     VCR.use_cassette('invalid_ssl') do
+  #       lambda {GTFS::URLSource.new(source_path, {ssl_verify: false})}.should raise_error(GTFS::InvalidSourceException)
+  #     end
+  #   end
+  # end
+
   context 'progress callback' do
     let(:source_path) {'http://dl.dropbox.com/u/416235/work/valid_gtfs.zip'}
     it 'reports download progress' do

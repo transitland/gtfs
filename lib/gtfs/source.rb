@@ -284,28 +284,20 @@ module GTFS
       counter
     end
 
-    def shape_chunks(batchsize=1_000_000)
-      yield_chunks(load_shape_counter, batchsize)
+    def shape_id_chunks(batchsize=1_000_000)
+      yield_chunks(load_shape_counter, batchsize) { |i| yield i }
+    end
+
+    def trip_id_chunks(batchsize=1_000_000)
+      yield_chunks(load_trip_counter, batchsize) { |i| yield i }
     end
 
     def trip_chunks(batchsize=1_000_000)
-      yield_chunks(load_trip_counter, batchsize)
-    end
-
-    def yield_chunks(counter, batchsize)
-      chunk = []
-      current = 0
-      order = counter.sort_by { |k,v| -v }
-      order.each do |k,v|
-        if (current + v) > batchsize
-          yield chunk
-          chunk = []
-          current = 0
-        end
-        chunk << k
-        current += v
+      counter = {}
+      load_trip_counter.each do |k,v|
+        counter[self.trip(k)] = v
       end
-      yield chunk
+      yield_chunks(counter, batchsize) { |i| yield i }
     end
 
     def each_shape_line(shape_ids=nil)
@@ -323,44 +315,15 @@ module GTFS
     end
 
     def each_trip_stop_times(trip_ids=nil, filter_empty=false)
-      filter_ids = shape_ids.nil? ? nil : Set.new(trip_ids)
+      filter_ids = trip_ids.nil? ? nil : Set.new(trip_ids)
       groups = Hash.new {|h,k| h[k] = []}
       self.each_stop_time do |e|
-        next if (trip_ids && !filter_ids.include?(e.trip_id))
+        next if (filter_ids && !filter_ids.include?(e.trip_id))
         groups[e.trip_id] << e
       end
       groups.each do |k,v|
         next if (filter_empty && v.size < 2)
         yield k, v.sort_by { |e| e.stop_sequence.to_i }
-      end
-    end
-
-    def trip_stop_times(trips=nil, filter_empty=false)
-      # Return all the stop time pairs for a set of trips.
-      # Trip IDs
-      trips ||= self.trips
-      trip_ids = Set.new trips.map(&:id)
-      # Subgraph mapping trip IDs to stop_times
-      trip_ids_stop_times = Hash.new {|h,k| h[k] = []}
-      self.each_stop_time do |stop_time|
-        next unless trip_ids.include?(stop_time.trip_id)
-        trip_ids_stop_times[stop_time.trip_id] << stop_time
-      end
-      # Process each trip
-      trips.each do |trip|
-        stop_times = trip_ids_stop_times[trip.trip_id]
-        next if (filter_empty && stop_times.size < 2)
-        stop_times = stop_times.sort_by { |st| st.stop_sequence.to_i }
-        yield trip, stop_times
-      end
-    end
-
-    def stop_time_pairs(trips=nil)
-      self.trip_stop_times(trips) do |trip,stop_times|
-        route = self.route(trip.route_id)
-        stop_times[0..-2].zip(stop_times[1..-1]).each do |origin,destination|
-          yield route, trip, origin, destination
-        end
       end
     end
 
@@ -394,6 +357,22 @@ module GTFS
     end
 
     private
+
+    def yield_chunks(counter, batchsize)
+      chunk = []
+      current = 0
+      order = counter.sort_by { |k,v| -v }
+      order.each do |k,v|
+        if (current + v) > batchsize
+          yield chunk
+          chunk = []
+          current = 0
+        end
+        chunk << k
+        current += v
+      end
+      yield chunk
+    end
 
     def create_tmpdir
       if !@tmpdir

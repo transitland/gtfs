@@ -35,8 +35,6 @@ module GTFS
       raise 'Source cannot be nil' if source.nil?
       # Cache
       @cache = {}
-      # Trip counter
-      @trip_counter = Hash.new { |h,k| h[k] = 0 }
       # Merged calendars
       @service_periods = {}
       # Shape lines
@@ -138,7 +136,7 @@ module GTFS
     end
 
     def shape_line(shape_id)
-      self.load_shapes if @shape_lines.empty?
+      self.load_shape_lines if @shape_lines.empty?
       @shape_lines[shape_id]
     end
 
@@ -163,7 +161,6 @@ module GTFS
 
       # Clear
       @cache.clear
-      @trip_counter.clear
 
       # Row count for progress bar...
       count = 0
@@ -222,7 +219,6 @@ module GTFS
         end
         trip_stop_sequence[trip] ||= []
         trip_stop_sequence[trip] << [stop_time.stop_sequence.to_i, stop_time.shape_dist_traveled, stop]
-        @trip_counter[trip] += 1
         count += 1
         progress_block.call(count, total, nil)
       end
@@ -233,18 +229,15 @@ module GTFS
       end
     end
 
-    def load_shapes
+    def load_shape_lines
       # Merge shapes
       @shape_lines.clear
-      # Return if missing shapes.txt
-      return unless file_present?(GTFS::Shape.filename)
-      shapes_merge = Hash.new { |h,k| h[k] = [] }
-      self.each_shape { |e| shapes_merge[e.shape_id] << e }
-      shapes_merge.each do |k,v|
-        @shape_lines[k] = ShapeLine.from_shapes(v)
+      self.each_shape_line do |e|
+        @shape_lines[e.shape_id] = e
       end
       @shape_lines
     end
+    alias :load_shapes :load_shape_lines
 
     def load_service_periods
       @service_periods.clear
@@ -272,15 +265,38 @@ module GTFS
       @service_periods
     end
 
-  ##### Incremental processing #####
+    ##### Incremental processing #####
+
+    def load_trip_counter
+      # Count StopTimes by Trip
+      counter = Hash.new { |h,k| h[k] = 0 }
+      self.each_stop_time do |stop_time|
+        counter[stop_time.trip_id] += 1
+      end
+      counter
+    end
+
+    def load_shape_counter
+      counter = Hash.new { |h,k| h[k] = 0 }
+      self.each_shape do |e|
+        counter[e.shape_id] += 1
+      end
+      counter
+    end
+
+    def shape_chunks(batchsize=1_000_000)
+      yield_chunks(load_shape_counter, batchsize)
+    end
 
     def trip_chunks(batchsize=1_000_000)
-      # Return chunks of trips containing approx. batchsize stop_times.
-      # Reverse sort trips
-      trips = @trip_counter.sort_by { |k,v| -v }
+      yield_chunks(load_trip_counter, batchsize)
+    end
+
+    def yield_chunks(counter, batchsize)
       chunk = []
       current = 0
-      trips.each do |k,v|
+      order = counter.sort_by { |k,v| -v }
+      order.each do |k,v|
         if (current + v) > batchsize
           yield chunk
           chunk = []
@@ -290,6 +306,33 @@ module GTFS
         current += v
       end
       yield chunk
+    end
+
+    def each_shape_line(shape_ids=nil)
+      # Return if missing shapes.txt
+      return unless file_present?(GTFS::Shape.filename)
+      filter_ids = shape_ids.nil? ? nil : Set.new(shape_ids)
+      groups = Hash.new { |h,k| h[k] = [] }
+      self.each_shape do |e|
+        next if (filter_ids && !filter_ids.include?(e.shape_id))
+        groups[e.shape_id] << e
+      end
+      groups.each do |k,v|
+        yield ShapeLine.from_shapes(v)
+      end
+    end
+
+    def each_trip_stop_times(trip_ids=nil, filter_empty=false)
+      filter_ids = shape_ids.nil? ? nil : Set.new(trip_ids)
+      groups = Hash.new {|h,k| h[k] = []}
+      self.each_stop_time do |e|
+        next if (trip_ids && !filter_ids.include?(e.trip_id))
+        groups[e.trip_id] << e
+      end
+      groups.each do |k,v|
+        next if (filter_empty && v.size < 2)
+        yield k, v.sort_by { |e| e.stop_sequence.to_i }
+      end
     end
 
     def trip_stop_times(trips=nil, filter_empty=false)

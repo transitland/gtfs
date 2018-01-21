@@ -13,12 +13,12 @@ describe GTFS::ShapeLine do
   ]}
   let(:shape_line) { GTFS::ShapeLine.from_shapes(shapes) }
 
-  context 'load_shapes' do
+  context 'load_shape_lines' do
     let(:data_source) {valid_local_source}
     let(:opts) {{}}
     it 'has a ShapeLine' do
       source = GTFS::ZipSource.new(data_source, opts)
-      source.load_shapes
+      source.load_shape_lines
       sl = source.shape_line('63542')
       sl.shape_id.should eq('63542')
     end

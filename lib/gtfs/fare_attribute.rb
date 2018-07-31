@@ -3,7 +3,7 @@ module GTFS
     include GTFS::Model
 
     has_required_attrs :fare_id, :price, :currency_type, :payment_method
-    has_optional_attrs :transfer_duration, :transfers
+    has_optional_attrs :transfer_duration, :transfers, :agency_id
     attr_accessor *attrs
 
     collection_name :fare_attributes
